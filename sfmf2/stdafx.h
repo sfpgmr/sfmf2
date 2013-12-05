@@ -1,21 +1,167 @@
-// stdafx.h : •W€‚ÌƒVƒXƒeƒ€ ƒCƒ“ƒNƒ‹[ƒh ƒtƒ@ƒCƒ‹‚ÌƒCƒ“ƒNƒ‹[ƒh ƒtƒ@ƒCƒ‹A‚Ü‚½‚Í
-// QÆ‰ñ”‚ª‘½‚­A‚©‚Â‚ ‚Ü‚è•ÏX‚³‚ê‚È‚¢AƒvƒƒWƒFƒNƒgê—p‚ÌƒCƒ“ƒNƒ‹[ƒh ƒtƒ@ƒCƒ‹
-// ‚ğ‹Lq‚µ‚Ü‚·B
+ï»¿// stdafx.h : æ¨™æº–ã®ã‚·ã‚¹ãƒ†ãƒ  ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ ãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ ãƒ•ã‚¡ã‚¤ãƒ«ã€ã¾ãŸã¯
+// å‚ç…§å›æ•°ãŒå¤šãã€ã‹ã¤ã‚ã¾ã‚Šå¤‰æ›´ã•ã‚Œãªã„ã€ãƒ—ãƒ­ã‚¸ã‚§ã‚¯ãƒˆå°‚ç”¨ã®ã‚¤ãƒ³ã‚¯ãƒ«ãƒ¼ãƒ‰ ãƒ•ã‚¡ã‚¤ãƒ«
+// ã‚’è¨˜è¿°ã—ã¾ã™ã€‚
 //
 
+
 #pragma once
+#include <SDKDDKVer.h>
 
-#include "targetver.h"
+#ifndef UNICODE
+#define UNICODE
+#endif
+// STL
 
-#define WIN32_LEAN_AND_MEAN             // Windows ƒwƒbƒ_[‚©‚çg—p‚³‚ê‚Ä‚¢‚È‚¢•”•ª‚ğœŠO‚µ‚Ü‚·B
-// Windows ƒwƒbƒ_[ ƒtƒ@ƒCƒ‹:
-#include <windows.h>
+#define DIRECTINPUT_VERSION 0x0800
+//#define BOOST_ALL_NO_LIB
 
-// C ƒ‰ƒ“ƒ^ƒCƒ€ ƒwƒbƒ_[ ƒtƒ@ƒCƒ‹
-#include <stdlib.h>
-#include <malloc.h>
-#include <memory.h>
+#include <stdint.h>
 #include <tchar.h>
+#include <iostream>
+#include <fstream>
+#include <exception>
+#include <memory>
+#include <string>
+#include <map>
+#include <locale>
+#include <fstream>
+#include <algorithm>
+#include <functional>
+#include <thread>
+
+// Boost
+#include <boost/archive/xml_woarchive.hpp>
+#include <boost/archive/xml_wiarchive.hpp>
+//#include <boost/archive/text_woarchive.hpp>
+//#include <boost/archive/text_wiarchive.hpp>
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
+//#include <boost/archive/binary_woarchive.hpp>
+//#include <boost/archive/binary_wiarchive.hpp>
+//#include <boost/archive/binary_oarchive.hpp>
+//#include <boost/archive/binary_iarchive.hpp>
+
+#include <boost/serialization/export.hpp>
+//#include <boost/serialization/is_abstract.hpp>
+#include <boost/serialization/version.hpp>
+#include <boost/serialization/serialization.hpp>
+#include <boost/serialization/split_member.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/void_cast.hpp>
+
+#include <boost/scoped_ptr.hpp> 
+#include <boost/scoped_array.hpp> 
+#include <boost/shared_ptr.hpp> 
+#include <boost/shared_array.hpp> 
+#include <boost/intrusive_ptr.hpp>
+#include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/array.hpp>
+//#include <boost/thread.hpp>
+#include <boost/optional.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#include <boost/variant.hpp>
+#include <boost/any.hpp>
+#include <boost/signals2.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/ptr_container/ptr_container.hpp>
+//#include <boost/thread/condition.hpp>
+//#include <boost/serialization/ptr_vector.hpp>
+#include <boost/ptr_container/ptr_array.hpp>
+#include <boost/ptr_container/serialize_ptr_container.hpp>
+//#include "serialization.h"
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+#include <boost/filesystem/convenience.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include "sf_com.h"
+//#include <d3d10_1.h>
+//#include <d3d10.h>
+//#include <d3d11.h>
+//#include <d3dx10.h>
+//#include <d3dx11.h>
+#include "dinput.h"
+#include <wincodec.h>
+#include <windows.h>
+#include <windowsx.h>
+#include <wincodec.h>
+#include <wincodecsdk.h>
+
+#include <comdef.h>
+#include "avrt.h"
+#include "mmsystem.h"
+
+// Direct Input
+
+#include "dinput.h"
 
 
-// TODO: ƒvƒƒOƒ‰ƒ€‚É•K—v‚È’Ç‰Áƒwƒbƒ_[‚ğ‚±‚±‚ÅQÆ‚µ‚Ä‚­‚¾‚³‚¢B
+// DXGI
+
+#include "dxgi.h"
+#include <dxgi1_2.h>
+#include <dxgidebug.h>
+#include "d3d11_1.h"
+#include <d3d11shader.h>
+#include <DDSTextureLoader.h>
+//#include "d3dx11.h"
+//#include <d3dx11effect.h>
+//#include <d3dxGlobal.h>
+#include <d3dcompiler.h>
+#include "DirectXMath.h"
+#include <d3dcsx.h>
+#include <d3d11shadertracing.h>
+
+// Direct2D
+
+#include <d2d1_1.h>
+#include <d2d1helper.h>
+#include <d2d1effects.h>
+#include <d2d1effecthelpers.h>
+
+// Direct Write
+
+#include <dwrite.h>
+#include <dwrite_1.h>
+
+// DWM
+
+#include "dwmapi.h" 
+#include "Shobjidl.h"
+
+// DirectComposition
+
+#include <dcomp.h>
+
+#include <wincodec.h>
+#include <wincodecsdk.h>
+
+#include "exception.h"
+//#include "singleton.h"
+//#include "code_converter.h"
+//#include "logger.h"
+
+
+// TODO: ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã«å¿…è¦ãªè¿½åŠ ãƒ˜ãƒƒãƒ€ãƒ¼ã‚’ã“ã“ã§å‚ç…§ã—ã¦ãã ã•ã„ã€‚
+#include "code_converter.h"
+#include "logger.h"
+#include "dout.h"
+//#include "dxerr.h"
+#include <wrl.h>
+#using <windows.winmd>
+#using <platform.winmd>
+#include <concrt.h>
+#include <ppl.h>
+#include <ppltasks.h>
+#include <agents.h>
+
+#define _WRL_PTR_TYPEDEF(x) typedef Microsoft::WRL::ComPtr<x> x ## Ptr
+
+#include "sfmf.h"
+//#include <Box2D.h>
+//_WRL_PTR_TYPEDEF();
+//_WRL_PTR_TYPEDEF();
