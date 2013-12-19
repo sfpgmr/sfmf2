@@ -197,7 +197,7 @@ namespace sf {
       reader_agent_.setup(file_path);
       //window_->reader_ready();
     } catch (win32_error_exception& e) {
-      window_->message_box((boost::wformat(L"ファイル読み込み時にエラーが発生しました。%s") % e.error()).str(),wstring(L"ファイル読込エラー"));
+      message_box((HWND)window_->raw_handle(),(boost::wformat(L"ファイル読み込み時にエラーが発生しました。%s") % e.error()).str(),wstring(L"ファイル読込エラー"));
     }
   }
 
@@ -207,7 +207,7 @@ namespace sf {
       reader_agent_.read_file();
       //window_->reader_read_file();
     } catch (win32_error_exception& e) {
-      window_->message_box((boost::wformat(L"再生開始時にエラーが発生しました。%s") % e.error()).str(),wstring(L"再生エラー"));
+      message_box((HWND) window_->raw_handle(), (boost::wformat(L"再生開始時にエラーが発生しました。%s") % e.error()).str(), wstring(L"再生エラー"));
     }
   }
 
@@ -222,7 +222,7 @@ namespace sf {
         //window_->reader_read_file();
       }
     } catch (win32_error_exception& e) {
-      window_->message_box((boost::wformat(L"一時停止時にエラーが発生しました。%s") % e.error()).str(),wstring(L"一時停止エラー"));
+      message_box((HWND) window_->raw_handle(), (boost::wformat(L"一時停止時にエラーが発生しました。%s") % e.error()).str(), wstring(L"一時停止エラー"));
     }
   }
 
@@ -232,7 +232,7 @@ namespace sf {
       reader_agent_.stop();
       //window_->reader_stop();
     } catch (win32_error_exception& e) {
-      window_->message_box((boost::wformat(L"停止時にエラーが発生しました。%s") % e.error()).str(),wstring(L"停止エラー"));
+      message_box((HWND) window_->raw_handle(), (boost::wformat(L"停止時にエラーが発生しました。%s") % e.error()).str(), wstring(L"停止エラー"));
     }
   }
 

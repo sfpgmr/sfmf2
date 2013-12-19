@@ -105,7 +105,7 @@
 #include "dxgi.h"
 #include <dxgi1_2.h>
 #include <dxgidebug.h>
-#include "d3d11_1.h"
+#include "d3d11_2.h"
 #include <d3d11shader.h>
 #include <DDSTextureLoader.h>
 //#include "d3dx11.h"
@@ -118,15 +118,15 @@
 
 // Direct2D
 
-#include <d2d1_1.h>
+#include <d2d1_2.h>
 #include <d2d1helper.h>
-#include <d2d1effects.h>
+#include <d2d1effects_1.h>
 #include <d2d1effecthelpers.h>
 
 // Direct Write
 
 #include <dwrite.h>
-#include <dwrite_1.h>
+#include <dwrite_2.h>
 
 // DWM
 
@@ -139,6 +139,33 @@
 
 #include <wincodec.h>
 #include <wincodecsdk.h>
+
+// Media Foundation
+
+#pragma warning(disable:4996)
+#include <mmreg.h>
+#include <mfapi.h>
+#include <mfidl.h>
+
+#include <evr.h>
+//#include <evr9.h>
+
+#include <Mfreadwrite.h>
+#include <mferror.h>
+#include <Mfsharingengine.h>
+#include <Wmcodecdsp.h>
+#include <Mfmediacapture.h>
+#include <Wmcontainer.h>
+#include <Mfcaptureengine.h>
+#include <Mfmp2dlna.h>
+#include "Codecapi.h"
+#include "Strmif.h"
+#include "Propsys.h"
+
+
+// DirectX TK
+
+#include "SimpleMath.h"
 
 #include "exception.h"
 //#include "singleton.h"
@@ -159,8 +186,8 @@
 #include <ppltasks.h>
 #include <agents.h>
 
-#define _WRL_PTR_TYPEDEF(x) typedef Microsoft::WRL::ComPtr<x> x ## Ptr
-
+//#define _WRL_PTR_TYPEDEF(x) typedef Microsoft::WRL::ComPtr<x> x ## Ptr
+#include "sfhelper.h"
 #include "sfmf.h"
 //#include <Box2D.h>
 //_WRL_PTR_TYPEDEF();

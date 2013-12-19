@@ -271,7 +271,7 @@ namespace sf
                 {
                   editing_output_params_.latency = res * 10000;
                 } else {
-                  message_box(L"レイテンシに不正な値が設定されています。",L"エラー",MB_OK);
+                  sf::message_box(hwnd_,L"レイテンシに不正な値が設定されています。", L"エラー", MB_OK);
                 }
                 try {
                   application::instance()->apply_output_device_config
@@ -294,7 +294,7 @@ namespace sf
                 {
                   editing_input_params_.latency = res * 10000;
                 } else {
-                  message_box(L"レイテンシに不正な値が設定されています。",L"エラー",MB_OK);
+                  sf::message_box(hwnd_,L"レイテンシに不正な値が設定されています。",L"エラー",MB_OK);
                 }
                 try {
                   application::instance()->apply_input_device_config

@@ -59,6 +59,11 @@ namespace sf
     void toplevel_window::show();
     bool toplevel_window::is_show();
     void toplevel_window::hide();
+    virtual bool is_activate();
+    virtual float width();
+    virtual float height();
+    virtual sf::dpi& dpi();
+    virtual bool is_fullscreen();
     void message_box(const std::wstring& text,const std::wstring& caption,uint32_t type = MB_OK);
     void text(std::wstring& text);
     void update();

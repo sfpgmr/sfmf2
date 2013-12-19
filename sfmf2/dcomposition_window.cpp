@@ -85,11 +85,11 @@ namespace sf
     //    DirectX::XMFLOAT4 vMeshColor;
   };
 
-  struct dcomposition_window::impl : public base_win32_window_t
+  struct dcomposition_window::impl : public base_win32_window2_t
   {
 
     impl(const std::wstring& menu_name,const std::wstring& name,bool fit_to_display,float width = 160,float height = 100) 
-      : base_win32_window_t(menu_name,name,fit_to_display,width,height) 
+      : base_win32_window2_t(menu_name,name,fit_to_display,width,height) 
       , timer_(*this,100)
       , icon_(IDI_ICON1)
       /*,mesh_color_(0.7f, 0.7f, 0.7f, 1.0f)*/
@@ -110,7 +110,7 @@ namespace sf
     // -------------------------------------------------------------------
 
     virtual void create(){
-      create_device_independent_resources();
+      //create_device_independent_resources();
       //    icon_ = ::LoadIconW(HINST_THISCOMPONENT,MAKEINTRESOURCE(IDI_ICON1));
       register_class(this->name_.c_str(),CS_HREDRAW | CS_VREDRAW ,0,0,icon_.get());
       create_window();
@@ -139,223 +139,24 @@ namespace sf
 
     virtual void create_device() 
     {
-      base_win32_window_t::create_device();
-      create_dcomp_device();
-
-    }
-
-    void create_dcomp_device()
-    {
-      THROW_IF_ERR(DCompositionCreateDevice(dxgi_device_.Get(),IID_PPV_ARGS(&dcomp_device_)));
-      THROW_IF_ERR(dcomp_device_->CreateTargetForHwnd(hwnd_,TRUE,&dcomp_target_));
-      IDCompositionSurfacePtr dcomp_surf;
-      RECT surf_rect = {0,0,200,200};
-      THROW_IF_ERR(dcomp_device_->CreateSurface(surf_rect.right,surf_rect.bottom,swap_chain_desc_.Format,DXGI_ALPHA_MODE_PREMULTIPLIED,&dcomp_surf));
-      IDXGISurfacePtr dxgi_surf;
-      POINT offset;
-
-      THROW_IF_ERR(dcomp_surf->BeginDraw(&surf_rect,IID_PPV_ARGS(&dxgi_surf),&offset));
-
-      D2D1_BITMAP_PROPERTIES1 bitmap_prop = D2D1::BitmapProperties1( 
-            D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW, 
-            D2D1::PixelFormat(swap_chain_desc_.Format, D2D1_ALPHA_MODE_PREMULTIPLIED), 
-            dpi_.dpix(), 
-            dpi_.dpiy()); 
- 
-      ID2D1ImagePtr backup;
-      ID2D1Bitmap1Ptr d2dtarget_bitmap;
-      THROW_IF_ERR(d2d_context_->CreateBitmapFromDxgiSurface(dxgi_surf.Get(), &bitmap_prop, &d2dtarget_bitmap)); 
-
-      d2d_context_->GetTarget(&backup);
-      d2d_context_->SetTarget(d2dtarget_bitmap.Get());
-
-      ID2D1SolidColorBrushPtr brush,tbrush;
-      float alpha = 1.0f;
-      THROW_IF_ERR(d2d_context_->CreateSolidColorBrush(D2D1::ColorF(1.0f,0.0f,0.0f,alpha),&brush));
-      THROW_IF_ERR(d2d_context_->CreateSolidColorBrush(D2D1::ColorF(1.0f,1.0f,1.0f),&tbrush));
-      IDWriteTextFormatPtr format;
-      // Text Formatの作成
-      THROW_IF_ERR(write_factory_->CreateTextFormat(
-        L"メイリオ",                // Font family name.
-        NULL,                       // Font collection (NULL sets it to use the system font collection).
-        DWRITE_FONT_WEIGHT_REGULAR,
-        DWRITE_FONT_STYLE_NORMAL,
-        DWRITE_FONT_STRETCH_NORMAL,
-        12.000f,
-        L"ja-jp",
-        & format));
-
-      d2d_context_->BeginDraw();
-
-      float w =  surf_rect.right / 2.0f,h = surf_rect.bottom / 2.0f;
-      std::wstring t = L"DirectComposition1";
-
-      d2d_context_->FillRectangle(D2D1::RectF(0.0f,0.0f,w,h),brush.Get());
-      d2d_context_->DrawTextW(t.c_str(),t.size(),format.Get(),D2D1::RectF(0.0f,0.0f,w,h),tbrush.Get());
-
-      brush->SetColor(D2D1::ColorF(0.0f,1.0f,0.0f,alpha));
-      d2d_context_->FillRectangle(D2D1::RectF(w,0.0f,w + w,h),brush.Get());
-      t = L"DirectComposition2";
-      d2d_context_->DrawTextW(t.c_str(),t.size(),format.Get(),D2D1::RectF(w,0.0f,w + w,h),tbrush.Get());
-      brush->SetColor(D2D1::ColorF(0.0f,0.0f,1.0f,alpha));
-      t = L"DirectComposition4";
-      d2d_context_->FillRectangle(D2D1::RectF(w,h,w + w,h + h),brush.Get());
-      d2d_context_->DrawTextW(t.c_str(),t.size(),format.Get(),D2D1::RectF(w,h,w + w,h + h),tbrush.Get());
-      brush->SetColor(D2D1::ColorF(1.0f,0.0f,1.0f,alpha));
-      d2d_context_->FillRectangle(D2D1::RectF(0,h,w,h + h),brush.Get());
-      t = L"DirectComposition3";
-      d2d_context_->DrawTextW(t.c_str(),t.size(),format.Get(),D2D1::RectF(0,h,w,h + h),tbrush.Get());
-
-      d2d_context_->EndDraw();
-      dcomp_surf->EndDraw();
-      brush.Reset();
-
-      
-      IDCompositionVisualPtr v,v1,v2,v3,v4;
-      THROW_IF_ERR(dcomp_device_->CreateVisual(&v));
-      THROW_IF_ERR(v->SetContent(dcomp_surf.Get()));
-
-//      v->SetOffsetX(width_ / 2.0f);
-//      v->SetOffsetY(height_ / 5.0f);
-
-      dcomp_target_->SetRoot(v.Get());
-
-      THROW_IF_ERR(dcomp_device_->CreateVisual(&v1));
-      THROW_IF_ERR(v1->SetContent(dcomp_surf.Get()));
-      THROW_IF_ERR(dcomp_device_->CreateVisual(&v2));
-      THROW_IF_ERR(v2->SetContent(dcomp_surf.Get()));
-      THROW_IF_ERR(dcomp_device_->CreateVisual(&v3));
-      THROW_IF_ERR(v3->SetContent(dcomp_surf.Get()));
-      THROW_IF_ERR(dcomp_device_->CreateVisual(&v4));
-      THROW_IF_ERR(v4->SetContent(dcomp_surf.Get()));
-
-      v1->SetOffsetY(height_  / 5.0f);
-      v2->SetOffsetY(height_  / 5.0f - h);
-      v3->SetOffsetY(height_  / 5.0f);
-      v4->SetOffsetY(height_  / 5.0f - h);
-
-      v1->SetOffsetX(w * 2.0f);
-      v2->SetOffsetX(w * 3.0f);
-      v3->SetOffsetX(w * 3.0f);
-      v4->SetOffsetX(w * 4.0f);
-
-      IDCompositionRectangleClipPtr clip;
-      dcomp_device_->CreateRectangleClip(&clip);
-      clip->SetLeft(0.0f);
-      clip->SetRight(w-1.0f);
-      clip->SetTop(0.0f);
-      clip->SetBottom(h-1.0f);
-      THROW_IF_ERR(clip->SetTopLeftRadiusX(3.0f));
-      THROW_IF_ERR(clip->SetBottomLeftRadiusX(3.0f));
-
-      //v1->SetClip(D2D1::RectF(0.0f,0.0f,w-1.0f,h-1.0f));
-      v1->SetClip(clip.Get());
-      v2->SetClip(D2D1::RectF(0.0f,h,w -1.0f,h + h -1.0f));
-      v3->SetClip(D2D1::RectF(w,0.0f,w + w - 1.0f,h - 1.0f));
-      v4->SetClip(D2D1::RectF(w,h,w+w - 1.0f,h+h - 1.0f));
-
-      v->AddVisual(v1.Get(),FALSE,nullptr);
-      v->AddVisual(v2.Get(),FALSE,nullptr);
-      v->AddVisual(v3.Get(),FALSE,nullptr);
-      v->AddVisual(v4.Get(),FALSE,nullptr);
-
-      // 2D Transform のセットアップ
-      {
-        IDCompositionTransform* transforms[3];
-
-        IDCompositionTransformPtr transform_group;
-
-        THROW_IF_ERR(dcomp_device_->CreateRotateTransform(&rot_));
-        THROW_IF_ERR(dcomp_device_->CreateRotateTransform(&rot_child_));
-        THROW_IF_ERR(dcomp_device_->CreateScaleTransform(&scale_));
-        THROW_IF_ERR(dcomp_device_->CreateTranslateTransform(&trans_));
-
-
-        rot_->SetCenterX(w);
-        rot_->SetCenterY(h);
-        rot_->SetAngle(0.0f);
-
-        rot_child_->SetCenterX(w/2.0f);
-        rot_child_->SetCenterY(w/2.0f);
-
-        scale_->SetCenterX(w);
-        scale_->SetCenterY(h);
-        scale_->SetScaleX(2.0f);
-        scale_->SetScaleY(2.0f);
-
-        trans_->SetOffsetX((width_ - surf_rect.right)/2.0f);
-        trans_->SetOffsetY((height_ - surf_rect.bottom)/2.0f);
-
-        transforms[0] = rot_.Get();
-        transforms[1] = scale_.Get();
-        transforms[2] = trans_.Get();
-
-        THROW_IF_ERR(dcomp_device_->CreateTransformGroup(transforms,3,&transform_group));
-        v->SetTransform(transform_group.Get());
-        v1->SetTransform(rot_child_.Get());
-        v2->SetTransform(rot_child_.Get());
-        v3->SetTransform(rot_child_.Get());
-        v4->SetTransform(rot_child_.Get());
-      }
-
-      {
-        // Opacityのアニメーション
-        IDCompositionAnimationPtr anim;
-        THROW_IF_ERR(dcomp_device_->CreateAnimation(&anim));
-        anim->AddCubic(0.0f,0.0f,1.0f / 4.0f,0.0f,0.0f);
-        anim->AddCubic(4.0f,1.0f,-1.0f / 4.0f,0.0f,0.0f);
-        anim->AddRepeat(8.0f,8.0f);
-        //anim->End(10.0f,0.0f);
-
-        IDCompositionEffectGroupPtr effect;
-        dcomp_device_->CreateEffectGroup(&effect);
-        effect->SetOpacity(anim.Get());
-
-        IDCompositionAnimationPtr anim3d;
-        THROW_IF_ERR(dcomp_device_->CreateAnimation(&anim3d));
-        anim3d->AddCubic(0.0f,0.0f,360.0f / 8.0f,0.0f,0.0f);
-        anim3d->AddRepeat(8.0f,8.0f);
-
-        IDCompositionRotateTransform3DPtr rot3d;
-        dcomp_device_->CreateRotateTransform3D(&rot3d);
-        rot3d->SetAngle(anim3d.Get());
-        rot3d->SetAxisZ(0.0f);
-        rot3d->SetAxisY(0.0f);
-        rot3d->SetAxisX(1.0f);
-        rot3d->SetCenterX(w);
-        rot3d->SetCenterY(w);
-
-     //   rot3d->SetAxisX(1.0f);
-
-        effect->SetTransform3D(rot3d.Get());
-
-        // 3D変換のアニメーション
-
-        v->SetEffect(effect.Get());
-      }
-
-      dcomp_device_->Commit();
-     
- 
-      d2d_context_->SetTarget(backup.Get());
-
+     // renderer_->create_device();
     }
 
     virtual void discard_device()
     {
-      base_win32_window_t::discard_device();
+      renderer_->discard_device();
       discard_dcomp_device();
     }
 
     void discard_dcomp_device()
     {
-      dcomp_device_.Reset();
+      //dcomp_device_.Reset();
     }
 
     void render()
     {
 
-      base_win32_window_t::render();
+      renderer_->render();
     }
 
 
@@ -364,12 +165,12 @@ namespace sf
       //    application::instance()->Player()->HandleEvent(wParam);
     }
 
-    sf::base_win32_window_t::result_t on_create(CREATESTRUCT *p)
-    {
-      create_device();
-      timer_.start();
-      return 0;
-    }
+    //sf::base_win32_window_t::result_t on_create(CREATESTRUCT *p)
+    //{
+    //  //create_device();
+    //  //timer_.start();
+    //  return 0;
+    //}
 
 
     LRESULT on_size(uint32_t flag,uint32_t width,uint32_t height)
@@ -432,7 +233,7 @@ namespace sf
       //safe_release(dcr_);
       //      safe_release(render_target_);
       // Windowの破棄
-      discard_device_independant_resources();
+      renderer_->discard_device_independant_resources();
       BOOL ret(::DestroyWindow(hwnd_));
       BOOST_ASSERT(ret != 0);
       return TRUE;
@@ -541,12 +342,19 @@ namespace sf
   void dcomposition_window::create(){impl_->create();};
   void dcomposition_window::show(){impl_->show();};
   void dcomposition_window::hide(){impl_->hide();};
+  bool dcomposition_window::is_activate() { return impl_->is_activate(); }
+  float dcomposition_window::width() { return impl_->width(); }
+  float dcomposition_window::height() { return impl_->height(); }
+  sf::dpi& dcomposition_window::dpi() { return impl_->dpi(); }
+  bool dcomposition_window::is_fullscreen() { return impl_->is_fullscreen(); }
+
+
   bool dcomposition_window::is_show(){return impl_->is_show();};
   void dcomposition_window::text(std::wstring& text){impl_->text(text);};
-  void dcomposition_window::message_box(const std::wstring& text,const std::wstring& caption,uint32_t type )
-  {
-    impl_->message_box(text,caption,type);
-  };
+//  void dcomposition_window::message_box(const std::wstring& text,const std::wstring& caption,uint32_t type )
+//  {
+ //   message_box(text,caption,type);
+ // };
   void dcomposition_window::update(){impl_->update();};
   void dcomposition_window::render(){impl_->render();};
   // void dcomposition_window::player_ready(){impl_->player_ready();};

@@ -59,8 +59,14 @@ namespace sf
     void dcomposition_window::show();
     bool dcomposition_window::is_show();
     void dcomposition_window::hide();
-    void message_box(const std::wstring& text,const std::wstring& caption,uint32_t type = MB_OK);
+    virtual bool is_activate();
+    virtual float width();
+    virtual float height();
+    virtual sf::dpi& dpi();
+    virtual bool is_fullscreen();
+    //void message_box(const std::wstring& text,const std::wstring& caption,uint32_t type = MB_OK);
     void text(std::wstring& text);
+    //std::wstring text()
     void update();
     void render();
 

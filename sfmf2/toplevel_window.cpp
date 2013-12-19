@@ -391,7 +391,7 @@ namespace sf
     IWICBitmapScalerPtr scaler;
     ID2D1BitmapPtr bitmap;
 
-    THROW_IF_ERR(wic_factory->CreateDecoderFromFilename(
+    CHK(wic_factory->CreateDecoderFromFilename(
       uri.c_str(),
       NULL,
       GENERIC_READ,
@@ -400,18 +400,18 @@ namespace sf
       ));
 
     // Create the initial frame.
-    THROW_IF_ERR(decoder->GetFrame(0, &decoder_source));
+    CHK(decoder->GetFrame(0, &decoder_source));
 
     // Convert the image format to 32bppPBGRA
     // (DXGI_FORMAT_B8G8R8A8_UNORM + D2D1_ALPHA_MODE_PREMULTIPLIED).
-    THROW_IF_ERR(hr = wic_factory->CreateFormatConverter(&converter));
+    CHK(hr = wic_factory->CreateFormatConverter(&converter));
 
     // If a new width or height was specified, create an
     // IWICBitmapScaler and use it to resize the image.
     if (destination_width != 0 || destination_height != 0)
     {
       uint32_t originalWidth, originalHeight;
-      THROW_IF_ERR(decoder_source->GetSize((UINT*)&originalWidth, (UINT*)&originalHeight));
+      CHK(decoder_source->GetSize((UINT*)&originalWidth, (UINT*)&originalHeight));
       if (destination_width == 0)
       {
         FLOAT scalar = static_cast<FLOAT>(destination_height) / static_cast<FLOAT>(originalHeight);
@@ -423,14 +423,14 @@ namespace sf
         destination_height = static_cast<uint32_t>(scalar * static_cast<FLOAT>(originalHeight));
       }
 
-      THROW_IF_ERR(wic_factory->CreateBitmapScaler(&scaler));
-      THROW_IF_ERR(scaler->Initialize(
+      CHK(wic_factory->CreateBitmapScaler(&scaler));
+      CHK(scaler->Initialize(
         decoder_source.Get(),
         destination_width,
         destination_height,
         WICBitmapInterpolationModeCubic
         ));
-      THROW_IF_ERR(converter->Initialize(
+      CHK(converter->Initialize(
         scaler.Get(),
         GUID_WICPixelFormat32bppPBGRA,
         WICBitmapDitherTypeNone,
@@ -441,7 +441,7 @@ namespace sf
     }
     else // Don't scale the image.
     {
-      THROW_IF_ERR(converter->Initialize(
+      CHK(converter->Initialize(
         decoder_source.Get(),
         GUID_WICPixelFormat32bppPBGRA,
         WICBitmapDitherTypeNone,
@@ -452,7 +452,7 @@ namespace sf
     }
 
     // Create a Direct2D bitmap from the WIC bitmap.
-    THROW_IF_ERR(render_target->CreateBitmapFromWicBitmap(
+    CHK(render_target->CreateBitmapFromWicBitmap(
       converter.Get(),
       NULL,
       bitmap.GetAddressOf()
@@ -474,10 +474,16 @@ namespace sf
   void toplevel_window::hide(){impl_->hide();};
   bool toplevel_window::is_show(){return impl_->is_show();};
   void toplevel_window::text(std::wstring& text){impl_->text(text);};
-  void toplevel_window::message_box(const std::wstring& text,const std::wstring& caption,uint32_t type )
-  {
-    impl_->message_box(text,caption,type);
-  };
+  bool toplevel_window::is_activate(){ return impl_->is_activate(); }
+  float toplevel_window::width(){ return impl_->width(); }
+  float toplevel_window::height(){ return impl_->height(); }
+  sf::dpi& toplevel_window::dpi(){ return impl_->dpi(); }
+  bool toplevel_window::is_fullscreen(){ return impl_->is_fullscreen(); }
+  //void toplevel_window::message_box(const std::wstring& text, const std::wstring& caption, uint32_t type)
+  //{
+  //  
+  //  impl_->message_box(text,caption,type);
+  //};
   void toplevel_window::update(){impl_->update();};
   void toplevel_window::render(){impl_->render();};
   // void toplevel_window::player_ready(){impl_->player_ready();};

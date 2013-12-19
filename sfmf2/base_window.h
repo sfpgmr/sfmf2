@@ -21,12 +21,14 @@
 
   ==============================================================================
 */
+#include "dpi.h"
+
 namespace sf {
 /** window ベースクラス */
 
 struct rect {
-  uint32_t width;
-  uint32_t height;
+  float width;
+  float height;
 };
 
 struct base_window : boost::noncopyable
@@ -47,14 +49,14 @@ struct base_window : boost::noncopyable
   // ウィンドウを隠す
   virtual void hide() = 0;
   //virtual void activate() = 0;
-  //virtual bool is_activate() = 0;
-  //virtual void deactivate() = 0;
-  //virtual void 
-  //virtual void size(uint32_t width,uint32_t height); 
-  //virtual rect size(); 
+  virtual bool is_activate() = 0;
+  virtual float width() = 0;
+  virtual float height() = 0;
+  virtual sf::dpi& dpi() = 0;
+  virtual bool is_fullscreen() = 0;
 
   virtual void text(std::wstring& text) = 0;
-  //virtual std::wstring text() = 0;
+  //virtual std::wstring& text() = 0;
 
   virtual void update() = 0;
 
