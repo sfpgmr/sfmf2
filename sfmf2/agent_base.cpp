@@ -31,7 +31,6 @@ Boston, MA 02111-1307 USA
 
 #include "message_loop.h"
 #include "sf_com.h"
-#include "dout.h"
 #include "async_reader.h"
 #include "agent_base.h"
 #include "application.h"

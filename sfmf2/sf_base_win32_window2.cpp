@@ -164,10 +164,10 @@ namespace sf
     // Windowを作成する
     // Windowを作成する
     CreateWindowEx(
-      WS_EX_TOOLWINDOW /* | WS_EX_LAYERED */,
+      WS_EX_OVERLAPPEDWINDOW,
       name_.c_str(),
       title_.c_str(),
-      /* WS_OVERLAPPEDWINDOW*/  WS_POPUP,
+      WS_OVERLAPPED | WS_SYSMENU | WS_THICKFRAME,
       CW_USEDEFAULT,
       CW_USEDEFAULT,
       static_cast<uint32_t>(width_),

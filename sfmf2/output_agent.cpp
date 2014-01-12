@@ -32,7 +32,6 @@ Boston, MA 02111-1307 USA
 #include "message_loop.h"
 #include "sf_com.h"
 #include "application.h"
-#include "dout.h"
 #include "async_reader.h"
 #include "output_agent.h"
 
@@ -203,7 +202,7 @@ copy_end:
             {
               wasapi_output_->wait();
             } else {
-              debug_out(L"XXXX No Wait !!!! XXXX\n");
+              DOUT(L"XXXX No Wait !!!! XXXX\n");
             }
           }
           break;
@@ -228,7 +227,7 @@ loop_end:
       }
       wasapi_output_.reset();
     }
-    debug_out(L"***** output_threadは終了!\n");
+    DOUT(L"***** output_threadは終了!\n");
     agent::done();
   };
 

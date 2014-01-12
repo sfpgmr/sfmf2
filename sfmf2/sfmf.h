@@ -8,26 +8,27 @@ namespace sf {
 #define VIDEO_WIDTH  1280
 #define VIDEO_HEIGHT  720
 
-	extern HRESULT InitializeSinkWriter(IMFSinkWriter **ppWriter, DWORD *pStreamIndex);
-	extern HRESULT WriteFrame(
-		IMFSinkWriter *pWriter,
-		DWORD streamIndex,
-		const LONGLONG& rtStart,        // Time stamp.
-		const LONGLONG& rtDuration      // Frame duration.
-		);
-	extern Windows::Foundation::IAsyncActionWithProgress<double>^ WriteAsync(Windows::Storage::Streams::IRandomAccessStream^ stream);
+	//extern HRESULT InitializeSinkWriter(IMFSinkWriter **ppWriter, DWORD *pStreamIndex);
+	//extern HRESULT WriteFrame(
+	//	IMFSinkWriter *pWriter,
+	//	DWORD streamIndex,
+	//	const LONGLONG& rtStart,        // Time stamp.
+	//	const LONGLONG& rtDuration      // Frame duration.
+	//	);
+	//extern Windows::Foundation::IAsyncActionWithProgress<double>^ WriteAsync(Windows::Storage::Streams::IRandomAccessStream^ stream);
 
 	// Class to start and shutdown Media Foundation
-	class AutoMF
+	class auto_mf
 	{
 	public:
-		AutoMF()
+		auto_mf()
 			: _bInitialized(false)
 		{
 			CHK(MFStartup(MF_VERSION));
+      _bInitialized = true;
 		}
 
-		~AutoMF()
+		~auto_mf()
 		{
 			if (_bInitialized)
 			{
@@ -39,66 +40,66 @@ namespace sf {
 		bool _bInitialized;
 	};
 
-	ref class  VideoWriter sealed
+	class  video_writer 
 	{
 	public:
-		VideoWriter(
-			Windows::Storage::Streams::IRandomAccessStream^ stream
-			);
+    video_writer(std::wstring& target_path, IMFMediaTypePtr& audio_media_type, unsigned int width = VIDEO_WIDTH, unsigned int height = VIDEO_HEIGHT);
 
-		virtual ~VideoWriter()
+		virtual ~video_writer()
 		{
-			Finalize();
+			finalize();
 		};
-	internal:
-		virtual void Finalize()
+
+    virtual void finalize()
 		{
-			if (sinkWriter_)
+			if (sink_writer_)
 			{
-				sinkWriter_->Finalize();
+				sink_writer_->Finalize();
 			}
 		}
-		void WriteAudioSample(IMFSample* sample);
-		void WriteVideoSample();
-		void SetTextureToSample(ID3D11DeviceContext1* context, ID3D11Texture2D* texture);
+		void write_audio_sample(IMFSample* sample);
+		void write_video_sample();
+		void set_texture_to_sample(ID3D11DeviceContext1* context, ID3D11Texture2D* texture);
 
-		property UINT SamplesPerSecond;
-		property UINT AverageBytesPerSecond;
-		property UINT ChannelCount;
-		property UINT BitsPerSample;
-    property LONGLONG VideoSampleTime { LONGLONG get() { return videoSampleTime_; }}
-	private:
-		// 出力先ストリームへのポインタ
-		Windows::Storage::Streams::IRandomAccessStream^ stream_;
-		// 
-		//    IMFSinkWriterPtr sinkWriter_;
-		IMFSinkWriterExPtr sinkWriter_;
-		IMFByteStreamPtr byteStream_;
+		UINT samples_per_second;
+		UINT average_bytes_per_second;
+		UINT channel_count;
+		UINT bits_per_sample;
+    LONGLONG video_sample_time(){ return video_sample_time_; }
+
+  private:
+
+    std::wstring target_path_;
+		IMFSinkWriterExPtr sink_writer_;
+		IMFByteStreamPtr byte_stream_;
 		IMFAttributesPtr attr_;
-		IMFMediaTypePtr mediaTypeOut_;
-		IMFMediaTypePtr mediaTypeIn_;
-		IMFMediaTypePtr mediaTypeInAudio_;
-		IMFMediaTypePtr mediaTypeOutAudio_;
-		DWORD streamIndex_;
-		DWORD streamIndexAudio_;
+		IMFMediaTypePtr media_type_out_;
+		IMFMediaTypePtr media_type_in_;
+    IMFMediaTypePtr audio_media_type_;
+    IMFMediaTypePtr media_type_in_audio_;
+		IMFMediaTypePtr media_type_out_audio_;
+		DWORD stream_index_;
+		DWORD stream_index_audio_;
 
 		IMFSamplePtr sample_;
 		IMFMediaBufferPtr buffer_;
-		LONGLONG videoSampleTime_;
-    LONGLONG audioSampleTime_;
+		LONGLONG video_sample_time_;
+    LONGLONG audio_sample_time_;
+
+    unsigned int width_, height_;
   };
 
 
-	class AudioReaderCallBack : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IMFSourceReaderCallback >
+	class audio_reader_callback : public Microsoft::WRL::RuntimeClass<Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>, IMFSourceReaderCallback >
 	{
 	public:
 		typedef boost::signals2::signal<void(HRESULT hrStatus, DWORD dwStreamIndex, DWORD dwStreamFlags, LONGLONG llTimestamp, IMFSample *pSample)> OnReadSampleSignal;
 
-		AudioReaderCallBack()
+		audio_reader_callback()
 		{
 		}
 
-		~AudioReaderCallBack()
+		~audio_reader_callback()
 		{
 		}
 
@@ -127,30 +128,30 @@ namespace sf {
 		OnReadSampleSignal onReadSampleSignal_;
 	};
 
-	Microsoft::WRL::ComPtr<AudioReaderCallBack> AudioReaderCallBackPtr;
+	Microsoft::WRL::ComPtr<audio_reader_callback> AudioReaderCallBackPtr;
 
-	ref class AudioReader sealed  {
+	class audio_reader {
 	public:
-		AudioReader(Windows::Storage::Streams::IRandomAccessStream^ stream);
-	internal:
-		property UINT SamplesPerSecond;
-		property UINT AverageBytesPerSecond;
-		property UINT ChannelCount;
-		property UINT BitsPerSample;
-    property LONGLONG FileSize { LONGLONG get(){ return fileSize_; } }
-		DWORD ReadSample(IMFSamplePtr& sample);
-		property LONGLONG SampleTime {
-			LONGLONG get(){ return videoSampleTime_; }
-		}
-		IMFMediaTypePtr& NativeMediaType(){ return nativeMediaType_; }
-		IMFMediaTypePtr& CurrentMediaType(){ return currentMediaType_; }
+    audio_reader(std::wstring& source);
+
+    const UINT samples_per_second = 44100;
+    const UINT average_bytes_per_second = 24000;
+    const UINT channel_count = 2;
+    const UINT bits_per_sample = 16;
+
+    LONGLONG size() { return fileSize_;  }
+		DWORD read_sample(IMFSamplePtr& sample);
+		LONGLONG sample_time() { return video_sample_time_; }
+		IMFMediaTypePtr& native_media_type(){ return native_media_type_; }
+		IMFMediaTypePtr& current_media_type(){ return current_media_type_; }
 
 	private:
+    IMFByteStreamPtr reader_stream_;
 		IMFSourceReaderExPtr reader_;
-		IMFByteStreamPtr byteStream_;
-		IMFMediaTypePtr nativeMediaType_;
-		IMFMediaTypePtr currentMediaType_;
-		LONGLONG videoSampleTime_;
+		IMFByteStreamPtr byte_stream_;
+		IMFMediaTypePtr native_media_type_;
+		IMFMediaTypePtr current_media_type_;
+		LONGLONG video_sample_time_;
     LONGLONG fileSize_;
     
 	};

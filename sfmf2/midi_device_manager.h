@@ -9,7 +9,7 @@ namespace sf {
  typedef device_info_base<MIDIOUTCAPS2W,midi_output> midi_output_device_t;
  typedef boost::ptr_vector<midi_output_device_t> midi_output_device_infos_t;
 
-class midi_device_manager : public singleton<midi_device_manager>
+struct midi_device_manager : public singleton<midi_device_manager>
 {
 public:
   midi_device_manager();

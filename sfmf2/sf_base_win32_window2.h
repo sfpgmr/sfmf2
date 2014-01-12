@@ -172,7 +172,8 @@ namespace sf{
     virtual result_t on_close()
     {
 //      discard_device();
-      renderer_->discard_device();
+      renderer_->discard();
+      sf::graphics::instance()->discard_device();
       // Windowの破棄
       BOOL ret(::DestroyWindow(hwnd_));
       BOOST_ASSERT(ret != 0);

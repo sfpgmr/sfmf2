@@ -315,8 +315,8 @@ namespace sf {
     }
 
 #ifdef _DEBUG
-    debug_out(info.name_ + L"\n");
-    debug_out(boost::wformat(L"latency default:%d min:%d \n") % info.latency_default_ % info.latency_minimum_);
+    DOUT(info.name_ + L"\n");
+    DOUT(boost::wformat(L"latency default:%d min:%d \n") % info.latency_default_ % info.latency_minimum_);
 #endif
     for(int bits = 0;bits < NUM_SAMPLE_BITS;++bits)
     {
@@ -342,7 +342,7 @@ namespace sf {
           if(hr == S_OK){
             info.support_formats_[AUDCLNT_SHAREMODE_EXCLUSIVE][ sample_bits[bits].bits_per_sample ][sample_bits[bits].valid_bits_per_sample][channel][sample_rates[rate]] = 0;
 #ifdef _DEBUG
-            debug_out(boost::wformat(L"|exc  |bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n") % sample_bits[bits].bits_per_sample % sample_bits[bits].valid_bits_per_sample % channel % sample_rates[rate] % (hr == S_OK?L"OK":L"NG"));
+            DOUT(boost::wformat(L"|exc  |bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n") % sample_bits[bits].bits_per_sample % sample_bits[bits].valid_bits_per_sample % channel % sample_rates[rate] % (hr == S_OK?L"OK":L"NG"));
 #endif            }
 
             // make_wave_format(f,sample_rates[rate],channel,sample_bits[bits],WAVE_FORMAT_EXTENSIBLE);
@@ -357,7 +357,7 @@ namespace sf {
               [channel][sample_rates[rate]] 
               = 0;
 #ifdef _DEBUG
-              debug_out(boost::wformat(L"|share|bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n")
+              DOUT(boost::wformat(L"|share|bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n")
                 % sample_bits[bits].bits_per_sample 
                 % sample_bits[bits].valid_bits_per_sample 
                 % channel % sample_rates[rate] 
@@ -369,7 +369,7 @@ namespace sf {
       }
     }
 #ifdef _DEBUG
-    debug_out(L"-------------------------------\n");
+    DOUT(L"-------------------------------\n");
 #endif
   }
 
@@ -384,7 +384,7 @@ namespace sf {
   output_device_infos_.push_back(info);
 
 #ifdef _DEBUG
-  wdout << deviceInfo->Name->Data() << std::endl;
+  DOUT2(deviceInfo->Name);
 #endif
 }
 
@@ -432,10 +432,10 @@ void wasapi_device_manager::input_added(Windows::Devices::Enumeration::DeviceWat
 {
   device_info info(deviceInfo);
   #ifdef _DEBUG
-    debug_out(L"================================================\n");
-    debug_out(boost::wformat(L"%d \n %s \n" ) % info.id_ % info.display_name_);
-    debug_out(boost::wformat(L"%d \n") % info.params.latency);
-    debug_out(L"================================================\n");
+    DOUT(L"================================================\n");
+    DOUT(boost::wformat(L"%d \n %s \n" ) % info.id_ % info.display_name_);
+    DOUT(boost::wformat(L"%d \n") % info.params.latency);
+    DOUT(L"================================================\n");
  #endif
 
   IAudioClient2Ptr c;
@@ -464,8 +464,8 @@ void wasapi_device_manager::input_added(Windows::Devices::Enumeration::DeviceWat
     info.params.latency = info.latency_default_;
   }
 #ifdef _DEBUG
-  debug_out(info.display_name_);
-  debug_out(boost::wformat(L"\nlatency default:%d min:%d \n") % info.latency_default_ % info.latency_minimum_);
+  DOUT(info.display_name_);
+  DOUT(boost::wformat(L"\nlatency default:%d min:%d \n") % info.latency_default_ % info.latency_minimum_);
 #endif
   for(int bits = 0;bits < NUM_SAMPLE_BITS;++bits)
   {
@@ -497,7 +497,7 @@ void wasapi_device_manager::input_added(Windows::Devices::Enumeration::DeviceWat
           [channel]
           [sample_rates[rate]] = 0;
 #ifdef _DEBUG
-          debug_out(boost::wformat(L"|exc  |bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n") 
+          DOUT(boost::wformat(L"|exc  |bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n") 
             % sample_bits[bits].bits_per_sample 
             % sample_bits[bits].valid_bits_per_sample 
             % channel % sample_rates[rate] 
@@ -516,7 +516,7 @@ void wasapi_device_manager::input_added(Windows::Devices::Enumeration::DeviceWat
             [channel]
             [sample_rates[rate]] = 0;
 #ifdef _DEBUG
-            debug_out(boost::wformat(L"|share|bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n") 
+            DOUT(boost::wformat(L"|share|bits:%02d|vbits:%02d|channel:%02d|rate:%06d|%s|\n") 
               % sample_bits[bits].bits_per_sample 
               % sample_bits[bits].valid_bits_per_sample 
               % channel 
@@ -529,7 +529,7 @@ void wasapi_device_manager::input_added(Windows::Devices::Enumeration::DeviceWat
     }
   }
 #ifdef _DEBUG
-  debug_out(L"-------------------------------\n");
+  DOUT(L"-------------------------------\n");
 #endif
 }
 
@@ -546,8 +546,7 @@ input_device_infos_.push_back(info);
 
 #ifdef _DEBUG
 //    if(deviceInfo->IsEnabled){
-wdout << deviceInfo->Name->Data() << std::endl;
-
+DOUT2(deviceInfo->Name);
 //		  auto i = deviceInfo->Properties->First();
 //		  while(i->HasCurrent)
 //		  {

@@ -238,6 +238,7 @@ _WRL_PTR_TYPEDEF(IDCompositionVisual);
 _WRL_PTR_TYPEDEF(IDCompositionVisual2);
 
 
+
 namespace sf{
 
   /* inline template <class Exc = win32_error_exception> void throw_if_err<>()(HRESULT hr)
@@ -502,7 +503,7 @@ namespace sf{
   struct wndproc
   {
     typedef WNDPROC proc_type;
-    typedef LRESULT return_type;
+    typedef INT_PTR return_type;
     static inline return_type def_wnd_proc(HWND hwnd, uint32_t message, WPARAM wParam, LPARAM lParam)
     {
       return ::DefWindowProcW(hwnd, message, wParam, lParam);
@@ -520,21 +521,184 @@ namespace sf{
     }
   };
 
-  inline void send_message(HWND hwnd,uint32_t message, uint32_t wparam, uint32_t lparam)
+  template<typename Window>
+  inline void send_message(Window& wnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  {
+    ::SendMessage(reinterpret_cast<HWND>(wnd.raw_handle()), message, wparam, lparam);
+  }
+
+  template<typename Window>
+  inline void send_message(std::unique_ptr<Window>& wnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  {
+    ::SendMessage(reinterpret_cast<HWND>(wnd->raw_handle()), message, wparam, lparam);
+  }
+
+  inline void send_message(HWND hwnd, uint32_t message, uint32_t wparam, uint32_t lparam)
   {
     ::SendMessage(hwnd, message, wparam, lparam);
   }
 
+
+  template<typename Window>
+  inline void post_message(Window& wnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  {
+    ::PostMessage(reinterpret_cast<HWND>( wnd.raw_handle()), message, wparam, lparam);
+  }
+  
   inline void post_message(HWND hwnd, uint32_t message, uint32_t wparam, uint32_t lparam)
   {
     ::PostMessage(hwnd, message, wparam, lparam);
   }
+
+
 
   inline void message_box(HWND hwnd, const std::wstring& text, const std::wstring& caption, uint32_t type = MB_OK)
   {
     ::MessageBox(hwnd, text.c_str(), caption.c_str(), type);
   }
 
+  template<typename Window>
+  inline void message_box(Window& wnd, const std::wstring& text, const std::wstring& caption, uint32_t type = MB_OK)
+  {
+    ::MessageBox(reinterpret_cast<HWND>(wnd.raw_handle()), text.c_str(), caption.c_str(), type);
+  }
 
+  // ウィンドウのサブクラス化
+
+  struct sub_class : boost::noncopyable {
+    typedef std::function<LRESULT(HWND hwnd, uint32_t message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass,DWORD_PTR dwRefData)> call_back_t;
+    typedef LRESULT(sub_class::*mem_func_t)(HWND, UINT, WPARAM, LPARAM, UINT_PTR, DWORD_PTR);
+   
+    sub_class(base_window& window, call_back_t& call_back, DWORD_PTR data) : window_(window), call_back_(call_back), thunk_((LONG_PTR)this)
+    {
+      sub_class_proc_ = (SUBCLASSPROC) thunk_.getCode();
+      SetWindowSubclass((HWND) window_.raw_handle(), sub_class_proc_, (UINT_PTR) &id_, data);
+    }
+
+    ~sub_class()
+    {
+      RemoveWindowSubclass((HWND) window_.raw_handle(), sub_class_proc_, (UINT_PTR) &id_);
+    }
+  private:
+    // 64bitモードのみで動作するサンクコード
+    // HookProcの呼び出しにthisを加えてメンバー関数として呼び出すコード
+    struct sub_class_proc_thunk : public Xbyak::CodeGenerator {
+      sub_class_proc_thunk(LONG_PTR this_addr)
+      {
+        // メンバ関数のアドレスを取得
+        auto temp = &sub_class::sub_class_proc;
+        // メンバ関数のアドレスをLONG_PTRにキャストする
+        // 普通にキャストできないので、ポインタのアドレスをvoid**にキャストして参照する
+        LONG_PTR proc = reinterpret_cast<LONG_PTR>(*(void**) &temp);
+
+        // 引数の位置をひとつ後ろにずらす
+        mov(r10, r9);
+        mov(r9, r8);
+        mov(r8, rdx);
+        mov(rdx, rcx);
+        // thisのアドレスを第一引数(rcx)に格納する
+        mov(rcx, (LONG_PTR) this_addr);
+        // スタックにある変数を取り出す
+        // 戻り先アドレス+作業用変数
+        lea(r11, ptr[rsp + 40]);
+        push(ptr[r11 + 8]);//第6変数
+        push(ptr[r11]);//第5変数
+        push(r10);//第4変数
+        // 関数呼び出し
+        // 作業用スタックの確保
+        sub(rsp, 32);
+        mov(r10, proc);
+        call(r10);
+        // スタックの清掃
+        // 作業用スタック + 変数3つ分
+        add(rsp, 32 + 8 * 3);
+        ret(0);
+      }
+    };
+
+    // 汎用性を高めるために、関数をファンクタ(std::function)で呼び換えるためのラッパー
+    LRESULT sub_class_proc(
+      HWND hWnd,
+      UINT uMsg,
+      WPARAM wParam,
+      LPARAM lParam,
+      UINT_PTR uIdSubclass,
+      DWORD_PTR dwRefData
+      ){
+      // ファンクタの呼び出し
+      return call_back_(hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefData);
+    }
+
+    UINT id_;
+    sub_class_proc_thunk thunk_;
+    base_window& window_;
+    call_back_t& call_back_;
+    SUBCLASSPROC sub_class_proc_;
+  };
+
+  // フック
+
+  struct hook : boost::noncopyable {
+
+    // フック処理ファンクションオブジェクト
+    typedef std::function<LRESULT(int nCode, WPARAM wp, LPARAM lp)> hook_proc_t;
+    hook(int idHook,        // フックタイプ
+      hook_proc_t& proc,  // フックプロシージャ
+      HINSTANCE hMod,    // アプリケーションインスタンスのハンドル
+      DWORD dwThreadId   // スレッドの識別子
+      ) : proc_(proc), thunk_((LONG_PTR)this), thread_id_(dwThreadId)
+    {
+      hook_ = SetWindowsHookEx(
+        idHook,        // フックタイプ
+        (HOOKPROC)thunk_.getCode(),     // フックプロシージャ
+        hMod,    // アプリケーションインスタンスのハンドル
+        dwThreadId   // スレッドの識別子
+        );
+    }
+
+    ~hook(){
+      UnhookWindowsHookEx(hook_);
+    }
+    HHOOK get_handle(){ return hook_; }
+  private:
+
+    // 64bitモードのみで動作するサンクコード
+    // HookProcの呼び出しにthisを加えてメンバー関数として呼び出すコード
+    struct hook_proc_thunk : public Xbyak::CodeGenerator {
+      hook_proc_thunk(LONG_PTR this_addr)
+      {
+        // メンバ関数のアドレスを取得
+        auto temp = &hook::hook_proc;
+        // メンバ関数のアドレスをLONG_PTRにキャストする
+        // 普通にキャストできないので、ポインタのアドレスをvoid**にキャストして参照する
+        LONG_PTR proc = reinterpret_cast<LONG_PTR>(*(void**) &temp);
+
+        // 引数の位置をひとつ後ろにずらす
+        mov(r9, r8);
+        mov(r8, rdx);
+        mov(rdx, rcx);
+        // thisのアドレスを第一引数(rcx)に格納する
+        mov(rcx, this_addr);
+        // 関数呼び出し
+        // 作業用スタックの確保
+        sub(rsp, 32);
+        mov(r10, proc);
+        call(r10);
+        // スタックの清掃
+        add(rsp, 32);
+        ret(0);
+      }
+    };
+
+    // 汎用性を高めるために、関数をファンクタ(std::function)で呼び換えるためのラッパー
+    LRESULT hook_proc(int nCode, WPARAM wp, LPARAM lp)
+    {
+      return proc_(nCode, wp, lp);
+    }
+    hook_proc_thunk thunk_;
+    hook_proc_t& proc_;
+    HHOOK hook_;
+    DWORD thread_id_;
+  };
 
 }

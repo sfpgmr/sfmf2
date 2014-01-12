@@ -28,7 +28,6 @@ Boston, MA 02111-1307 USA
 #include "sf_com.h"
 #include "application.h"
 #include "mixer_agent.h"
-#include "dout.h"
 #include "async_reader.h"
 
 #if _DEBUG
@@ -118,7 +117,7 @@ void mixer_agent_t::run()
 //        WaitForSingleObject(event_.get(),WAIT_TIMEOUT_DEFAULT);
   }
   }
-    debug_out(L"***** mixerは終了!\n");
+    DOUT(L"***** mixerは終了!\n");
   agent::done();
 }
 }

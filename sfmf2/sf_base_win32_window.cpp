@@ -546,7 +546,7 @@ namespace sf
         &d2d_factory_
         ));
 #else
-      EXCEPTION_ON_ERROR(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_));
+      THROW_IF_ERR(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_));
 #endif
 
     }
@@ -1486,8 +1486,8 @@ namespace sf
       adapter->GetDesc1(&desc);
       //adapter->CheckInterfaceSupport();
 
-      debug_out(boost::wformat(L"%s \n") % desc.Description) ;
-      debug_out(boost::wformat(L"%d \n") % desc.DedicatedVideoMemory );
+      DOUT(boost::wformat(L"%s \n") % desc.Description) ;
+      DOUT(boost::wformat(L"%d \n") % desc.DedicatedVideoMemory );
       IDXGIDevice1Ptr device;
 
       uint32_t oi = 0;

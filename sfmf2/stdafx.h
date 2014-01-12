@@ -176,7 +176,7 @@
 // TODO: プログラムに必要な追加ヘッダーをここで参照してください。
 #include "code_converter.h"
 #include "logger.h"
-#include "dout.h"
+#include "debugout.h"
 //#include "dxerr.h"
 #include <wrl.h>
 #using <windows.winmd>

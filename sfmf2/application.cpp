@@ -27,18 +27,14 @@ Boston, MA 02111-1307 USA
 #include "message_loop.h"
 #include "sf_com.h"
 #include "application.h"
-#include "dout.h"
 #include "midi_input.h"
 #include "midi_output.h"
+
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
-#ifdef _DEBUG
-sf::wdstream wdout;
 #endif
 
 #ifndef HINST_THISCOMPONENT
@@ -82,7 +78,6 @@ namespace sf {
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // wcoutで文字化けしないように、ロケールをデフォルト言語に設定する
-    wdout.imbue(std::locale(""));
     std::wcout.imbue(std::locale(""));
 
     // 2重起動の防止処理
@@ -143,7 +138,8 @@ namespace sf {
 
     // ウィンドウを作成する
     window_ = sf::create_dcomposition_window(
-      std::wstring(L"DirectComposition サンプル"),std::wstring(L"DirectComposition サンプル"),5,false,::GetSystemMetrics(SM_CXSCREEN),::GetSystemMetrics(SM_CYSCREEN));
+      std::wstring(L"DirectComposition サンプル"), std::wstring(L"DirectComposition サンプル"), 5, false, 1024, 768);
+    // std::wstring(L"DirectComposition サンプル"), std::wstring(L"DirectComposition サンプル"), 5, false, ::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
     ////  ファイルリーダーエージェントの起動
     reader_agent_.start();
     //// キャプチャエージェントの起動
@@ -284,6 +280,13 @@ namespace sf {
       input_agent_.change_and_wait(input_status - 1,input_status);
     }
 
+  }
+
+  void application::execute_rendering(const std::function<void(int)>& progress)
+  {
+    test_renderer_.reset(new test_renderer(renderer_source_path_, renderer_target_path_));
+    test_renderer_->progress().connect(progress);
+    test_renderer_->run();
   }
 
   // Playerを初期化する。

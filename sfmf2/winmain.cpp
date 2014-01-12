@@ -27,5 +27,11 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
     // 強制終了する
     TerminateProcess(NULL,-1);
   }
+ //  catch (_com_error& e)
+ //{
+ //    ::MessageBox(nullptr, e.ErrorMessage(), L"アプリケーション実行エラー", MB_OK);
+ //    TerminateProcess(NULL, -1);
+ //}
+
   return ret;
 }

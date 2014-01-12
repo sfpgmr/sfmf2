@@ -28,7 +28,6 @@ Boston, MA 02111-1307 USA
 #include "sf_com.h"
 #include "application.h"
 #include "input_agent.h"
-#include "dout.h"
 #include "async_reader.h"
 
 #if _DEBUG
@@ -154,7 +153,7 @@ namespace sf {
     }
 loop_end:
     ;
-    debug_out(L"##### input_threadは終了！\n");
+    DOUT(L"##### input_threadは終了！\n");
     if(wasapi_input_ && wasapi_input_->is_start())
     {
       wasapi_input_->stop();

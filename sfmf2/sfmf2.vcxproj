@@ -105,6 +105,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/Zm200  /D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <CallingConvention>Cdecl</CallingConvention>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -158,16 +159,17 @@
     <ClCompile Include="base_window.cpp" />
     <ClCompile Include="code_converter.cpp" />
     <ClCompile Include="config_tab_dialog.cpp" />
+    <ClCompile Include="control_base.cpp" />
     <ClCompile Include="dcomposition_window.cpp" />
     <ClCompile Include="dpi.cpp" />
     <ClCompile Include="exception.cpp" />
+    <ClCompile Include="graphics.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="info_tab_dialog.cpp" />
     <ClCompile Include="input_agent.cpp" />
     <ClCompile Include="jumplist.cpp" />
     <ClCompile Include="list_view.cpp" />
     <ClCompile Include="logger.cpp" />
-    <ClCompile Include="midi_config_tab_dialog.cpp" />
     <ClCompile Include="midi_device_manager.cpp" />
     <ClCompile Include="midi_input.cpp" />
     <ClCompile Include="midi_output.cpp" />
@@ -178,21 +180,25 @@
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="ring_buffer.cpp" />
     <ClCompile Include="sequencer.cpp" />
-    <ClCompile Include="sequence_dialog.cpp" />
     <ClCompile Include="seq_tab_dialog.cpp" />
     <ClCompile Include="sfmf.cpp" />
     <ClCompile Include="sf_base_win32_window.cpp" />
     <ClCompile Include="sf_base_win32_window2.cpp" />
     <ClCompile Include="sf_com.cpp" />
-    <ClCompile Include="sf_windows_base.cpp" />
+    <ClCompile Include="sf_windows_base.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">All</AssemblerOutput>
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">All</AssemblerOutput>
+    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="tab_dialog.cpp" />
     <ClCompile Include="taskbar.cpp" />
+    <ClCompile Include="test_renderer.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="toplevel_window.cpp" />
+    <ClCompile Include="video_renderer.cpp" />
     <ClCompile Include="wasapi_base.cpp" />
     <ClCompile Include="wasapi_manager.cpp" />
     <ClCompile Include="winmain.cpp" />
@@ -208,10 +214,12 @@
     <ClInclude Include="base_window.h" />
     <ClInclude Include="code_converter.h" />
     <ClInclude Include="config_tab_dialog.h" />
+    <ClInclude Include="control_base.h" />
     <ClInclude Include="dcomposition_window.h" />
-    <ClInclude Include="dout.h" />
+    <ClInclude Include="debugout.h" />
     <ClInclude Include="dpi.h" />
     <ClInclude Include="exception.h" />
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="info_tab_dialog.h" />
     <ClInclude Include="input_agent.h" />
@@ -220,7 +228,6 @@
     <ClInclude Include="logger.h" />
     <ClInclude Include="message_loop.h" />
     <ClInclude Include="midi_base.h" />
-    <ClInclude Include="midi_config_tab_dialog.h" />
     <ClInclude Include="midi_device_manager.h" />
     <ClInclude Include="midi_input.h" />
     <ClInclude Include="midi_message.h" />
@@ -247,15 +254,28 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="tab_dialog.h" />
     <ClInclude Include="taskbar.h" />
+    <ClInclude Include="test_renderer.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="toplevel_window.h" />
+    <ClInclude Include="video_renderer.h" />
     <ClInclude Include="wasapi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\..\..\libs\DirectXTK\DirectXTK_Desktop_2013.sln" />
+    <None Include="VideoShader.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="wasapi2.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\..\..\..\libs\DirectXTK\DirectXTK_Desktop_2013.sln" />
+    <FxCompile Include="VideoPixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="VideoVertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

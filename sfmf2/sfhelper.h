@@ -1,5 +1,5 @@
 #pragma once
-#define CHK(statement)	{HRESULT _hr = (statement); if (FAILED(_hr)) { throw _com_error(_hr); };}
+#define CHK(statement)	{HRESULT _hr = (statement); if (FAILED(_hr)) { throw sf::win32_error_exception(_hr); };}
 #define _WRL_PTR_TYPEDEF(x) typedef Microsoft::WRL::ComPtr<x> x ## Ptr
 
 // Direct Write
@@ -408,6 +408,8 @@ _WRL_PTR_TYPEDEF(IWMVideoDecoderHurryup); // Controls the speed of the video dec
 _WRL_PTR_TYPEDEF(IWMVideoForceKeyFrame); // Forces the encoder to encode the current frame as a key frame. 
 
 _WRL_PTR_TYPEDEF(ICodecAPI);
+_WRL_PTR_TYPEDEF(IPropertyStore);
+
 
 
 namespace sf {
@@ -429,6 +431,8 @@ namespace sf {
     PROPVARIANT* operator &(){return get();}
 
     operator PROPVARIANT*() {return get();}
+
+    PROPVARIANT& value() { return value_; }
 
   private:
     PROPVARIANT value_;
@@ -455,6 +459,8 @@ namespace sf {
     }
     return hr;
   }
+
+
 
 }
 

@@ -6,3 +6,4 @@
 #include "jumplist.h"
 #include "dpi.h"
 #include "taskbar.h"
+#include "control_base.h"

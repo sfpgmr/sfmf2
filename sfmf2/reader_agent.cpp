@@ -25,7 +25,6 @@ Boston, MA 02111-1307 USA
 
 #include "message_loop.h"
 #include "sf_com.h"
-#include "dout.h"
 #include "async_reader.h"
 #include "application.h"
 #include "reader_agent.h"
@@ -54,11 +53,11 @@ namespace sf {
         change_status(status_config_ok);
         break;
       case status_ready:
-        debug_out(L"@@@@ reader_agent_t:ready @@@@  \n");
+        DOUT(L"@@@@ reader_agent_t:ready @@@@  \n");
         change_status(status_ready_ok);
         break;
       case status_exit:
-        debug_out(L"@@@@ reader_agent_t:exit @@@@  \n");
+        DOUT(L"@@@@ reader_agent_t:exit @@@@  \n");
         goto loop_end;
         break;
       case status_play:
@@ -68,7 +67,7 @@ namespace sf {
         }
       case status_play_ok:
         {
-          debug_out(L"@@@@ reader_agent_t:read_file @@@@  \n");
+          DOUT(L"@@@@ reader_agent_t:read_file @@@@  \n");
           audio_base& out(app.output_device());
           while(status_.load(std::memory_order_acquire) == status_play_ok)
           {
@@ -137,7 +136,7 @@ namespace sf {
         }
         break;
       case status_pause:
-        debug_out(boost::wformat(L"**pause** index:%d address:%x") % index_ % buffer_[index_].get());
+        DOUT(boost::wformat(L"**pause** index:%d address:%x") % index_ % buffer_[index_].get());
         change_status(status_pause_ok);
         break;
       case status_end:
@@ -154,7 +153,7 @@ namespace sf {
         change_status(status_seek_ok);
         break;
       case status_stop:
-        debug_out(L"reader_agent_t **stop** \n");
+        DOUT(L"reader_agent_t **stop** \n");
         reader_->reset_data_position();
         reset_ringbuffer(ringbuffer_);
         position_ = 0;
@@ -168,7 +167,7 @@ namespace sf {
     }
 loop_end:
     ;
-    debug_out(L"##### reader_agent_tは終了！\n");
+    DOUT(L"##### reader_agent_tは終了！\n");
     agent::done();
   }
 
