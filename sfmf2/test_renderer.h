@@ -8,7 +8,7 @@ namespace sf{
     explicit test_renderer_base(sf::video_renderer_resources& res);
     void init_view_matrix();
     void discard();
-    void render(LONGLONG t);
+    void render(LONGLONG t,INT16* wave_data,int length);
     virtual ~test_renderer_base();
   private:
     sf::video_renderer_resources res_;
@@ -23,6 +23,14 @@ namespace sf{
     ID3D11BufferPtr cb_changes_every_frame_;
     ID3D11ShaderResourceViewPtr shader_res_view_;
     ID3D11SamplerStatePtr sampler_state_;
+
+
+    std::wstring                                    text_;
+    DWRITE_TEXT_METRICS	                            text_metrics_;
+    ID2D1SolidColorBrushPtr white_brush_;
+    ID2D1DrawingStateBlockPtr state_;
+    IDWriteTextLayoutPtr       text_layout_;
+    IDWriteTextFormatPtr		text_format_;
 
     DirectX::XMMATRIX mat_world_;
     DirectX::XMMATRIX mat_view_;

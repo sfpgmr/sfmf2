@@ -286,7 +286,7 @@ namespace sf {
   {
     test_renderer_.reset(new test_renderer(renderer_source_path_, renderer_target_path_));
     test_renderer_->progress().connect(progress);
-    test_renderer_->run();
+    test_renderer_->start();
   }
 
   // Playerを初期化する。

@@ -536,18 +536,16 @@ namespace sf
     //}
 
     if(!d2d_factory_){
-#if defined(DEBUG) || defined(_DEBUG)
       D2D1_FACTORY_OPTIONS options = {};
+#if defined(DEBUG) || defined(_DEBUG)
       options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION ;
+#endif
       THROW_IF_ERR(D2D1CreateFactory(
         D2D1_FACTORY_TYPE_SINGLE_THREADED,
         __uuidof(ID2D1Factory1),
         &options,
         &d2d_factory_
         ));
-#else
-      THROW_IF_ERR(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_));
-#endif
 
     }
 

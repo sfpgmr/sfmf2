@@ -260,6 +260,51 @@ test_renderer_base::test_renderer_base(video_renderer_resources& res) : res_(res
   d3d_device->CreateRasterizerState(&hRasterizerDesc, &hpRasterizerState);
   d3d_context->RSSetState(hpRasterizerState);
 
+  // Direct 2D リソースの作成
+
+  res_.d2d_context->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::White), &white_brush_);
+
+  ZeroMemory(&text_metrics_, sizeof(DWRITE_TEXT_METRICS));
+
+    // デバイスに依存するリソースを作成します。
+  CHK(
+    graphics::instance()->write_factory()->CreateTextFormat(
+    L"Meiryo",
+    nullptr,
+    DWRITE_FONT_WEIGHT_LIGHT,
+    DWRITE_FONT_STYLE_NORMAL,
+    DWRITE_FONT_STRETCH_NORMAL,
+    48.0f,
+    L"en-US",
+    &text_format_
+    )
+    );
+
+  CHK(text_format_->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_NEAR));
+
+  CHK(graphics::instance()->d2d_factory()->CreateDrawingStateBlock(&state_));
+
+  text_ = L".WAVファイルからM4Vファイルを生成するサンプル";
+
+  CHK(
+    graphics::instance()->write_factory()->CreateTextLayout(
+    text_.c_str(),
+    (uint32) text_.length(),
+    text_format_.Get(),
+    res_.width, // 入力テキストの最大幅。
+    40.0f, // 入力テキストの最大高さ。
+    &text_layout_
+    )
+    );
+  CHK(text_layout_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
+  CHK(text_layout_->GetMetrics(&text_metrics_));
+
+  //D2D1::Matrix3x2F mat2d = D2D1::Matrix3x2F::Rotation(90.0f);
+  //mat2d.Invert();
+  // mat2d._22 = - 1.0f;
+
+  //res_.d2d_context->SetTransform(mat2d);
+
   //init_ = true;// 初期化完了
 }
 
@@ -280,7 +325,7 @@ void test_renderer_base::init_view_matrix()
   d3d_context->UpdateSubresource(cb_never_changes_.Get(), 0, NULL, &cnc, 0, 0);
 
   // 投影行列のセットアップ
-  mat_projection_ = XMMatrixPerspectiveFovLH(XM_PIDIV4, res_.width / res_.height, 0.01f, 100.0f);
+  mat_projection_ = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float)res_.width / (float)res_.height, 0.01f, 100.0f);
   cb_change_on_resize ccor;
   ccor.mProjection = XMMatrixTranspose(mat_projection_);
   // 定数バッファに格納
@@ -288,7 +333,7 @@ void test_renderer_base::init_view_matrix()
 
 }
 
-void test_renderer_base::render(LONGLONG time)
+void test_renderer_base::render(LONGLONG time,INT16* wave_data,int length)
 {
   auto& d3d_context(res_.d3d_context);
 
@@ -307,8 +352,10 @@ void test_renderer_base::render(LONGLONG time)
   cb.vLightColor = mesh_color_;
   d3d_context->UpdateSubresource(cb_changes_every_frame_.Get(), 0, NULL, &cb, 0, 0);
   d3d_context->OMSetRenderTargets(1, res_.render_target_view.GetAddressOf(), res_.depth_view.Get());
-  float color[4] = { 1.0f, 0.0f, 1.0f, 1.0f };
+//  float color[4] = { 1.0f, (2.0f - sinf(rad)) * 0.5f , 1.0f, 1.0f };
+  float color[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
   d3d_context->ClearRenderTargetView(res_.render_target_view.Get(), color);
+  d3d_context->ClearDepthStencilView(res_.depth_view.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
   // 四角形
   d3d_context->VSSetShader(v_shader_.Get(), NULL, 0);
@@ -320,7 +367,61 @@ void test_renderer_base::render(LONGLONG time)
   d3d_context->PSSetShaderResources(0, 1, shader_res_view_.GetAddressOf());
   d3d_context->PSSetSamplers(0, 1, sampler_state_.GetAddressOf());
 
+  // 頂点バッファのセット
+  uint32_t stride = sizeof(simple_vertex);
+  uint32_t offset = 0;
+  d3d_context->IASetVertexBuffers(0, 1, v_buffer_.GetAddressOf(), &stride, &offset);
+  // インデックスバッファのセット
+  d3d_context->IASetIndexBuffer(i_buffer_.Get(), DXGI_FORMAT_R16_UINT, 0);
+  // プリミティブの形態を指定する
+  d3d_context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+
   d3d_context->DrawIndexed(36, 0, 0);
+
+  ID2D1DeviceContext* context = res_.d2d_context.Get();
+
+  context->SetTarget(res_.video_bitmap.Get());
+  context->SaveDrawingState(state_.Get());
+  context->BeginDraw();
+
+  //// 右下隅に配置
+  //D2D1::Matrix3x2F screenTranslation = D2D1::Matrix3x2F::Translation(
+  //  0.0f, logicalSize.Height);
+  ////		logicalSize.Height - m_textMetrics.layoutHeight
+  ////	);
+
+  ////D2D1::Matrix3x2F screenTranslation = D2D1::Matrix3x2F::Translation(0.0f,0.0f);
+  //screenTranslation._22 = screenTranslation._22 * -1.0f;
+
+  //context->SetTransform(screenTranslation * m_deviceResources->GetOrientationTransform2D());
+
+  context->DrawTextLayout(
+    D2D1::Point2F(0.f, 0.f),
+    text_layout_.Get(),
+    white_brush_.Get()
+    );
+
+  // 波形データを表示する
+  const float delta = res_.width / (float)length;
+  for (float i = 0; i < res_.width; i += delta){
+    int pos = (int) i;
+    if (pos >= length) break;
+    float left = ((float) wave_data[pos]) / 32768.0f * 150.0f + 180.0f;
+    float right = ((float) wave_data[pos + 1]) / 32768.0f * 150.0f + 540.0f;
+    context->DrawLine(D2D1::Point2F(i, 180.0f), D2D1::Point2F(i, left), white_brush_.Get());
+    context->DrawLine(D2D1::Point2F(i, 540.0f), D2D1::Point2F(i, right), white_brush_.Get());
+  }
+
+  // D2DERR_RECREATE_TARGET をここで無視します。このエラーは、デバイスが失われたことを示します。
+  // これは、Present に対する次回の呼び出し中に処理されます。
+  HRESULT hr = context->EndDraw();
+  if (hr != D2DERR_RECREATE_TARGET)
+  {
+    CHK(hr);
+  }
+
+  context->RestoreDrawingState(state_.Get());
 
 }
 

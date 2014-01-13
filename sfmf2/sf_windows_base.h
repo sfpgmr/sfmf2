@@ -276,7 +276,8 @@ namespace sf{
       if(::GetClassInfoExW(hInstance,class_name.c_str(),&wndclass_) == 0)
       {
         if(::GetLastError() == ERROR_CLASS_DOES_NOT_EXIST)
-        { 
+        {
+          OutputDebugStringW(class_name.c_str());
           ::ZeroMemory(&wndclass_,sizeof(wndclass_));
           wndclass_.lpszMenuName = (LPCWSTR)menu_name;
           wndclass_.lpszClassName = class_name.c_str();
@@ -293,11 +294,12 @@ namespace sf{
           atom_ = ::RegisterClassExW(&wndclass_) ;
           BOOST_ASSERT(atom_ != 0);
           is_register_ = true;
+          //OutputDebugStringW((boost::wformat(L"~~~~~~ %s class register sucess!! ~~~~~~~~~~") % class_name.c_str()).str().c_str());
         } else {
           throw win32_error_exception();
         }
       } else {
-        is_register_ = false;
+        is_register_ = true;
       }
     };
 

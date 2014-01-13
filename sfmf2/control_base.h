@@ -24,6 +24,7 @@ namespace sf{
     {
       hwnd_ = CreateWindowEx(dwExStyle,class_name.c_str(),window_name.c_str(),dwStyle,x,y,nWidth,nHeight,reinterpret_cast<HWND>(parent.raw_handle()),hMenu,hInstance,NULL);
       if (hwnd_ == NULL){
+        OutputDebugStringW((boost::wformat(L"~~~~~~ %s failed!! ~~~~~~~~~~") % class_name.c_str()).str().c_str() );
         throw sf::win32_error_exception();
       }
       proc_ = (SUBCLASSPROC) thunk_.getCode();

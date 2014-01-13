@@ -64,7 +64,7 @@ private:
     desc.SampleDesc.Count = 1;
     desc.SampleDesc.Quality = 0;
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;// 他のスレッドから参照される可能性あり
+    desc.MiscFlags = 0;//D3D11_RESOURCE_MISC_SHARED;// 他のスレッドから参照される可能性あり
     desc.CPUAccessFlags = 0;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.Width = width_;
@@ -217,7 +217,7 @@ private:
         // コンテキストの競合を回避するためにロックする
         // critical_section::scoped_lock lock(m_criticalSection);
         // Direct3D11によるレンダリング
-        renderer_->render(video_writer_->video_sample_time());
+        renderer_->render(video_writer_->video_sample_time(),waveBuffer + startPos,length);
         startPos += lengthTick;
         if ((totalLength - startPos) > lengthTick)
         {

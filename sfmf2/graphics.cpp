@@ -165,19 +165,17 @@ void  graphics::create_device_independent_resources()
   // Direc2D FactoryÇÃê∂ê¨
   if (!d2d_factory_){
     ID2D1Factory1Ptr factory;
-#if defined(DEBUG) || defined(_DEBUG)
     D2D1_FACTORY_OPTIONS options = {};
+#if defined(DEBUG) || defined(_DEBUG)
     options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
     CHK(D2D1CreateFactory(
       D2D1_FACTORY_TYPE_SINGLE_THREADED,
       __uuidof(ID2D1Factory1),
       &options,
       &factory
       ));
-#else
-    CHK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &factory));
-#endif
-
+//   CHK(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &factory));
     CHK(factory.As(&d2d_factory_));
 
   }

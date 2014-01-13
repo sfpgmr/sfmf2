@@ -21,7 +21,7 @@
   ==============================================================================
 */
 #if defined(_WIN64)
-TRACE("_WIN64 is defined.\n");
+//TRACE(L"_WIN64 is defined.\n");
 #endif
 
 #include "StdAfx.h"

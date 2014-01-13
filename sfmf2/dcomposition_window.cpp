@@ -207,8 +207,8 @@ namespace sf
         switch (uMsg){
         case WM_PAINT:
         {
-                       sf::paint_struct ps((HWND) base.raw_handle());
-                       break;
+          sf::paint_struct ps((HWND) base.raw_handle());
+          break;
         }
         case WM_ERASEBKGND:
           return FALSE;

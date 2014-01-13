@@ -128,7 +128,7 @@ namespace sf {
 		OnReadSampleSignal onReadSampleSignal_;
 	};
 
-	Microsoft::WRL::ComPtr<audio_reader_callback> AudioReaderCallBackPtr;
+	typedef Microsoft::WRL::ComPtr<audio_reader_callback> AudioReaderCallBackPtr;
 
 	class audio_reader {
 	public:

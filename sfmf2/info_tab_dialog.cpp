@@ -114,17 +114,15 @@ namespace sf
     {
       // Direct2DFactory の生成
       if(!d2d_factory_){
-#if defined(DEBUG) || defined(_DEBUG)
         D2D1_FACTORY_OPTIONS options;
-        options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION ;
+#if defined(DEBUG) || defined(_DEBUG)
+        options.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
         THROW_IFERR(D2D1CreateFactory(
           D2D1_FACTORY_TYPE_SINGLE_THREADED,
           options,
           d2d_factory_.GetAddressOf()
           ));
-#else
-        THROW_IFERR(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, &d2d_factory_));
-#endif
 
       }
 
