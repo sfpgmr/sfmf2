@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "renderer.h"
 #include "graphics.h"
+#include "application.h"
 
 using namespace sf;
 using namespace DirectX;
@@ -381,6 +382,7 @@ void  window_renderer::restore_swapchain_and_dependent_resources()
 void window_renderer::render()
 {
   if (window_.is_activate()){
+    concurrency::critical_section::scoped_lock lock(application::instance()->video_critical_section());
 
     static float rot = 0.0f;
     float color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
@@ -414,6 +416,7 @@ void window_renderer::render()
     ID2D1SolidColorBrushPtr brush, line_brush;
     d2d_context->CreateSolidColorBrush(D2D1::ColorF(D2D1::ColorF::OrangeRed), &brush);
     d2d_context->CreateSolidColorBrush(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.5f), &line_brush);
+   // d2d_context->CreateBitmapFromDxgiSurface();
 
     {
       D2D_POINT_2F start, end;
@@ -433,6 +436,11 @@ void window_renderer::render()
         d2d_context->DrawLine(start, end, line_brush.Get(), 0.5f);
       }
 
+    }
+
+    if (video_bitmap_){
+      D2D1_SIZE_F s(video_bitmap_->GetSize());
+      d2d_context->DrawBitmap(video_bitmap_.Get(), D2D1::RectF(30.0f, 250.0f, 320.0f + 30.0f, 200.0f + 250.0f), 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,D2D1::RectF(0.0f,0.0f,s.width,s.height));
     }
 
     static int count;

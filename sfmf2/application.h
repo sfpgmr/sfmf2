@@ -39,6 +39,7 @@
 #include "graphics.h"
 #include "test_renderer.h"
 
+
 namespace sf {
   class application : public singleton<application>
   {
@@ -163,14 +164,65 @@ namespace sf {
     // H.264 レンダラー
     // ----------------------------
   public:
+    
     std::unique_ptr<test_renderer>& renderer(){ return test_renderer_; }
-    void renderer_source_path(const std::wstring& path){ renderer_source_path_ = path; }
-    void renderer_target_path(const std::wstring& path){ renderer_target_path_ = path; }
+
+    void renderer_source_path(const std::wstring& path)
+    { 
+      renderer_source_path_ = path; 
+      renderer_source_path_changed_();
+      check_enable();
+    }
+
+    std::wstring& renderer_source_path()
+    {
+      return renderer_source_path_;
+    }
+    
+    void renderer_target_path(const std::wstring& path){
+      renderer_target_path_ = path; 
+      renderer_target_path_changed_();
+      check_enable();
+    }
+
+    std::wstring& renderer_target_path()
+    {
+      return renderer_target_path_;
+    }
+
+
+    void check_enable(){
+      if (renderer_source_path_.size() > 0 && renderer_target_path_.size() > 0){
+        renderer_enable_ = true;
+        renderer_enable_status_changed_(renderer_enable_);
+      }
+    }
+
     void execute_rendering(const std::function<void(int)>& progress);
-  private:
+
+    typedef boost::signals2::signal<void()> renderer_source_path_changed_t;
+    typedef boost::signals2::signal<void()> renderer_target_path_changed_t;
+    typedef boost::signals2::signal<void(bool)> renderer_enable_status_changed_t;
+ 
+    renderer_source_path_changed_t& renderer_source_path_changed(){ return renderer_source_path_changed_; }
+    renderer_target_path_changed_t& renderer_target_path_changed(){ return renderer_target_path_changed_; }
+    renderer_enable_status_changed_t& renderer_enable_status_changed(){ return renderer_enable_status_changed_; }
+
+    std::wstring& renderer_video_title(){ return renderer_video_title_; }
+    void video_bitmap(ID2D1Bitmap1Ptr& bitmap);
+    concurrency::critical_section&  video_critical_section(){
+      return  video_critical_section_;
+    }
+ private:
+   concurrency::critical_section video_critical_section_;
+   bool renderer_enable_;
     std::wstring renderer_source_path_;
     std::wstring renderer_target_path_;
     std::unique_ptr<test_renderer> test_renderer_;
+    renderer_source_path_changed_t renderer_source_path_changed_;
+    renderer_target_path_changed_t renderer_target_path_changed_;
+    renderer_enable_status_changed_t renderer_enable_status_changed_;
+    std::wstring renderer_video_title_;
   };
 }
 

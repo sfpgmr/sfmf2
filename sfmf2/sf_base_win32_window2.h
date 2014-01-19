@@ -185,7 +185,7 @@ namespace sf{
     virtual result_t on_key_down(uint32_t vkey,uint32_t ext_key,uint32_t repeat);
     virtual result_t on_key_up(uint32_t vkey,uint32_t ext_key,uint32_t repeat) { return std::is_same<proc_t,wndproc>::value?0:FALSE; }
     virtual result_t on_app_command(uint32_t command,uint32_t device,uint32_t keystate) {return std::is_same<proc_t,wndproc>::value?0:FALSE;}
-    virtual result_t on_command(uint32_t wparam, uint32_t lparam)  { return std::is_same<proc_t,wndproc>::value?0:FALSE; } 
+    virtual result_t on_command(WPARAM wparam, LPARAM lparam)  { return std::is_same<proc_t,wndproc>::value?0:FALSE; } 
     virtual result_t on_timer(uint32_t timer_id)  {
       //::InvalidateRect(hwnd_,NULL,FALSE);
       renderer_->render();

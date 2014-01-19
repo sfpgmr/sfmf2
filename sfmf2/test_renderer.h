@@ -5,7 +5,9 @@ namespace sf{
   class test_renderer_base
   {
   public:
-    explicit test_renderer_base(sf::video_renderer_resources& res);
+    explicit test_renderer_base(sf::video_renderer_resources& res,std::wstring& t);
+    const std::wstring& title(){ return text_; }
+    void title(const std::wstring& t);
     void init_view_matrix();
     void discard();
     void render(LONGLONG t,INT16* wave_data,int length);

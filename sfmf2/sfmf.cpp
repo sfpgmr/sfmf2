@@ -10,6 +10,13 @@
 //#include "DirectXBase.h"
 #include "sfmf.h"
 
+
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
+
 #pragma comment(lib, "shlwapi")
 #pragma comment(lib,"Mfplat.lib")
 #pragma comment(lib,"Mf.lib")
@@ -575,7 +582,18 @@ video_writer::video_writer(
     D3D11_MAPPED_SUBRESOURCE mapped;
     CHK(context->Map(texture, 0, D3D11_MAP_READ, 0, &mapped));
 
-    CHK(MFCopyImage(pbBuffer, width_ * 4, reinterpret_cast<BYTE*>(mapped.pData), mapped.RowPitch, width_ * 4, height_));
+    //CHK(MFCopyImage(pbBuffer, width_ * 4, reinterpret_cast<BYTE*>(mapped.pData), mapped.RowPitch, width_ * 4, height_));
+
+    DWORD *dest = (DWORD*) pbBuffer;
+    const UINT pitch = mapped.RowPitch / sizeof(DWORD);
+    DWORD *src = (DWORD*) mapped.pData + (height_ - 1) * pitch;
+
+    for (UINT i = 0; i < height_; ++i){
+      for (UINT j = 0; j < width_; ++j){
+        *dest++ = *src++;
+      }
+      src -= pitch * 2;
+    }
 
     // 書き込み先バッファのアンロック
     CHK(buffer_->Unlock());

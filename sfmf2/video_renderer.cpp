@@ -4,6 +4,14 @@
 #include "test_renderer.h"
 #include "sf_windows_base.h"
 #include "control_base.h"
+#include "application.h"
+
+
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
 
 using namespace sf;
 using namespace Concurrency;
@@ -24,9 +32,27 @@ struct h264_renderer<Renderer>::impl
   {
     sf::com_initialize com_init;
     sf::auto_mf mf;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
     init();
+
+    concurrency::call<int> preview_timer_func([this](int v)-> void {
+      preview_updated_();
+      }
+    );
+
+    concurrency::timer<int> preview_timer(100,0,&preview_timer_func,true);
+    preview_timer.start();
     render();
+    preview_timer.stop();
     clean_up();
+    end = std::chrono::system_clock::now();
+    compute_time_ = end - start;
+
+    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+    DOUT(boost::wformat(L"compute time: %f \n") % compute_time_.count());
+    complete_(compute_time_);
   }
 
   typename sf::h264_renderer<Renderer>::progress_t& progress()
@@ -34,12 +60,26 @@ struct h264_renderer<Renderer>::impl
     return progress_;
   }
 
+  typename sf::h264_renderer<Renderer>::complete_t& complete()
+  {
+    return complete_;
+  }
+
+  typename sf::h264_renderer<Renderer>::preview_updated_t& preview_updated()
+  {
+    return preview_updated_;
+  }
+
+  std::chrono::duration<double>& compute_time() { return compute_time_; }
+  const std::wstring& title(){ return title_; }
+  void title(const std::wstring& t){ title_ = t; }
+
 private:
 
   void init()
   {
     init_graphics();
-    renderer_.reset(new Renderer(video_renderer_resources(width_, height_, d3d_context_, video_resource_view_, video_render_target_view_, video_depth_view_, video_texture_, video_depth_texture_, video_bitmap_,d2d_context_)));
+    renderer_.reset(new Renderer(video_renderer_resources(width_, height_, d3d_context_, video_resource_view_, video_render_target_view_, video_depth_view_, video_texture_, video_depth_texture_, video_bitmap_, d2d_context_), title_));
     audio_reader_.reset(new audio_reader(source_));
     video_writer_.reset(new video_writer(destination_,audio_reader_->current_media_type(),width_,height_));
   }
@@ -147,7 +187,7 @@ private:
     video_texture_.As(&surface);
     D2D1_BITMAP_PROPERTIES1 bitmapProperties =
       D2D1::BitmapProperties1(
-      D2D1_BITMAP_OPTIONS_TARGET | D2D1_BITMAP_OPTIONS_CANNOT_DRAW,
+      D2D1_BITMAP_OPTIONS_TARGET  /*| D2D1_BITMAP_OPTIONS_CANNOT_DRAW*/,
       D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_IGNORE)
       );
     CHK(d2d_context_->CreateBitmapFromDxgiSurface(surface.Get(), bitmapProperties, &video_bitmap_));
@@ -210,12 +250,13 @@ private:
     totalLength /= 2;
     DWORD length = lengthTick;
 
+    // コンテキストの競合を回避するためにロックする
+    critical_section::scoped_lock lock(application::instance()->video_critical_section());
+
     while (video_time_ > video_writer_->video_sample_time())
     {
 
       {
-        // コンテキストの競合を回避するためにロックする
-        // critical_section::scoped_lock lock(m_criticalSection);
         // Direct3D11によるレンダリング
         renderer_->render(video_writer_->video_sample_time(),waveBuffer + startPos,length);
         startPos += lengthTick;
@@ -255,10 +296,13 @@ private:
     d2d_context_.Reset();
     d3d_context_.Reset();
   }
-  
+
+
+  private:
   std::wstring source_;
   std::wstring destination_;
   unsigned int width_, height_;
+  std::wstring title_;
   // Direct2D/3Dリソース
   ID3D11DeviceContext2Ptr d3d_context_;// コンテキスト
   ID3D11ShaderResourceViewPtr    video_resource_view_;// プレビューとして画面に表示するために用いる
@@ -278,8 +322,11 @@ private:
   LONGLONG video_time_;
   LONGLONG video_step_time_;
 
-  typename sf::h264_renderer<Renderer>::progress_t progress_;
+  std::chrono::duration<double> compute_time_;
 
+  typename sf::h264_renderer<Renderer>::progress_t progress_;
+  typename sf::h264_renderer<Renderer>::complete_t complete_;
+  typename sf::h264_renderer<Renderer>::preview_updated_t preview_updated_;
 };
 
 template <typename Renderer>
@@ -305,5 +352,30 @@ typename h264_renderer<Renderer>::progress_t& h264_renderer<Renderer>::progress(
 {
   return impl_->progress();
 }
+
+template <typename Renderer>
+std::chrono::duration<double>& h264_renderer<Renderer>::compute_time()
+{
+  return impl_->compute_time();
+}
+template <typename Renderer>
+typename h264_renderer<Renderer>::complete_t& h264_renderer<Renderer>::complete(){
+  return impl_->complete();
+};
+
+template <typename Renderer>
+typename h264_renderer<Renderer>::preview_updated_t& h264_renderer<Renderer>::preview_updated(){
+  return impl_->preview_updated();
+};
+template <typename Renderer>
+const std::wstring& h264_renderer<Renderer>::title(){
+  return impl_->title();
+};
+
+template <typename Renderer>
+void h264_renderer<Renderer>::title(const std::wstring& t){
+  return impl_->title(t);
+};
+
 
 template  class h264_renderer<test_renderer_base>;

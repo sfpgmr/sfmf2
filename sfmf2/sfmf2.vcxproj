@@ -201,6 +201,7 @@
     <ClCompile Include="test_renderer.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="toplevel_window.cpp" />
+    <ClCompile Include="ui_renderer.cpp" />
     <ClCompile Include="video_renderer.cpp" />
     <ClCompile Include="wasapi_base.cpp" />
     <ClCompile Include="wasapi_manager.cpp" />
@@ -260,6 +261,7 @@
     <ClInclude Include="test_renderer.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="toplevel_window.h" />
+    <ClInclude Include="ui_renderer.h" />
     <ClInclude Include="video_renderer.h" />
     <ClInclude Include="wasapi.h" />
   </ItemGroup>

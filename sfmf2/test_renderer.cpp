@@ -4,6 +4,12 @@
 #include "test_renderer.h"
 
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h>
+#define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
+#endif
+
 using namespace sf;
 using namespace DirectX;
 
@@ -34,7 +40,7 @@ struct cb_changes_every_frame
   //    DirectX::XMFLOAT4 vMeshColor;
 };
 
-test_renderer_base::test_renderer_base(video_renderer_resources& res) : res_(res), time_(0)
+test_renderer_base::test_renderer_base(video_renderer_resources& res,std::wstring& t) : res_(res), time_(0)
 {
   ///////////////////////////////////////////////////////////////////
   // Direct3Dリソースの生成
@@ -284,8 +290,26 @@ test_renderer_base::test_renderer_base(video_renderer_resources& res) : res_(res
 
   CHK(graphics::instance()->d2d_factory()->CreateDrawingStateBlock(&state_));
 
-  text_ = L".WAVファイルからM4Vファイルを生成するサンプル";
+  title(t);
 
+  application::instance()->video_bitmap(res.video_bitmap);
+
+//  title(L".WAVファイルからM4Vファイルを生成するサンプル");
+
+
+  //D2D1::Matrix3x2F mat2d = D2D1::Matrix3x2F::Rotation(90.0f);
+  //mat2d.Invert();
+  // mat2d._22 = - 1.0f;
+
+  //res_.d2d_context->SetTransform(mat2d);
+
+  //init_ = true;// 初期化完了
+}
+
+
+void test_renderer_base::title(const std::wstring& t)
+{
+  text_.assign(t);
   CHK(
     graphics::instance()->write_factory()->CreateTextLayout(
     text_.c_str(),
@@ -298,14 +322,6 @@ test_renderer_base::test_renderer_base(video_renderer_resources& res) : res_(res
     );
   CHK(text_layout_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
   CHK(text_layout_->GetMetrics(&text_metrics_));
-
-  //D2D1::Matrix3x2F mat2d = D2D1::Matrix3x2F::Rotation(90.0f);
-  //mat2d.Invert();
-  // mat2d._22 = - 1.0f;
-
-  //res_.d2d_context->SetTransform(mat2d);
-
-  //init_ = true;// 初期化完了
 }
 
 void test_renderer_base::init_view_matrix()

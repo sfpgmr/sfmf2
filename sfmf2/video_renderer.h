@@ -43,10 +43,18 @@ namespace sf{
   {
   public:
     typedef boost::signals2::signal<void(int progress)> progress_t;
+    typedef boost::signals2::signal<void(std::chrono::duration<double>&)> complete_t;
+    typedef boost::signals2::signal<void()> preview_updated_t;
     h264_renderer(std::wstring& source, std::wstring& destination, unsigned int width = 1280, unsigned int height = 720);
     void run();
     virtual ~h264_renderer();
     progress_t& progress();
+    complete_t& complete();
+    preview_updated_t& preview_updated();
+
+    std::chrono::duration<double>& compute_time();
+    const std::wstring& title();
+    void title(const std::wstring& t);
   private:
     struct impl;
     std::unique_ptr<impl> impl_;

@@ -21,12 +21,13 @@ namespace sf {
     
     IDCompositionTargetPtr& dcomp_target(){ return dcomp_target_; }
     IDCompositionVisual2Ptr& dcomp_root_visual(){ return dcomp_root_visual_; }
-
+    ID2D1Bitmap1Ptr& video_bitmap(){ return video_bitmap_; };
   private:
 
     base_window& window_;
 
     ID2D1Bitmap1Ptr d2d1_target_bitmap_;
+    ID2D1Bitmap1Ptr video_bitmap_;
   
     IDXGISurface2Ptr dxgi_back_buffer_;
     DXGI_MODE_DESC1 mode_desc_;

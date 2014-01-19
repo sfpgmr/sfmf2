@@ -524,32 +524,50 @@ namespace sf{
   };
 
   template<typename Window>
-  inline void send_message(Window& wnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  inline void send_message(Window& wnd, uint32_t message, WPARAM wparam, LPARAM lparam)
   {
     ::SendMessage(reinterpret_cast<HWND>(wnd.raw_handle()), message, wparam, lparam);
   }
 
   template<typename Window>
-  inline void send_message(std::unique_ptr<Window>& wnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  inline void send_message(std::unique_ptr<Window>& wnd, uint32_t message, WPARAM wparam, LPARAM lparam)
   {
     ::SendMessage(reinterpret_cast<HWND>(wnd->raw_handle()), message, wparam, lparam);
   }
 
-  inline void send_message(HWND hwnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  inline void send_message(HWND hwnd, uint32_t message, WPARAM wparam, LPARAM lparam)
   {
     ::SendMessage(hwnd, message, wparam, lparam);
   }
 
 
   template<typename Window>
-  inline void post_message(Window& wnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+  inline void post_message(Window& wnd, uint32_t message, WPARAM wparam, LPARAM lparam)
   {
     ::PostMessage(reinterpret_cast<HWND>( wnd.raw_handle()), message, wparam, lparam);
   }
-  
-  inline void post_message(HWND hwnd, uint32_t message, uint32_t wparam, uint32_t lparam)
+
+  template<typename Window>
+  inline void post_message(std::unique_ptr<Window>& wnd, uint32_t message, WPARAM wparam, LPARAM lparam)
+  {
+    ::PostMessage(reinterpret_cast<HWND>(wnd->raw_handle()), message, wparam, lparam);
+  }
+
+  inline void post_message(HWND hwnd, uint32_t message, WPARAM wparam, LPARAM lparam)
   {
     ::PostMessage(hwnd, message, wparam, lparam);
+  }
+
+  template<typename Window>
+  inline void enable(Window& wnd, bool enable)
+  {
+    ::EnableWindow(reinterpret_cast<HWND>(wnd.raw_handle()), enable ? TRUE : FALSE);
+  }
+
+  template<typename Window>
+  inline void enable(std::unique_ptr<Window>& wnd, bool enable)
+  {
+    ::EnableWindow(reinterpret_cast<HWND>(wnd->raw_handle()), enable ? TRUE : FALSE);
   }
 
 

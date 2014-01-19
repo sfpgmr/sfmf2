@@ -4,7 +4,9 @@ namespace sf{
   class control_base
   {
   public:
+    // サブクラス化した後に呼ばれるファンクタ定義
     typedef std::function<LRESULT (control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam) > subclass_func_t;
+    // ポインタ型
     typedef std::unique_ptr<control_base> control_base_ptr;
  
     template <typename ParentWindowType> 
@@ -24,18 +26,20 @@ namespace sf{
     {
       hwnd_ = CreateWindowEx(dwExStyle,class_name.c_str(),window_name.c_str(),dwStyle,x,y,nWidth,nHeight,reinterpret_cast<HWND>(parent.raw_handle()),hMenu,hInstance,NULL);
       if (hwnd_ == NULL){
-        OutputDebugStringW((boost::wformat(L"~~~~~~ %s failed!! ~~~~~~~~~~") % class_name.c_str()).str().c_str() );
         throw sf::win32_error_exception();
       }
       proc_ = (SUBCLASSPROC) thunk_.getCode();
+      // サブクラス化
       SetWindowSubclass(hwnd_, proc_, (UINT_PTR) &id_subclass_, NULL);
     }
 
     virtual ~control_base()
     {
+      // サブクラス化解除
       RemoveWindowSubclass(hwnd_, proc_, (UINT_PTR) &id_subclass_);
     };
     
+    // ファンクタを呼び出すための転送メンバ関数
     LRESULT subclass_proc_(HWND hWnd,UINT uMsg,WPARAM wParam, LPARAM lParam )
     {
 
@@ -50,7 +54,7 @@ namespace sf{
     HWND hwnd_;
     SUBCLASSPROC proc_;
     subclass_func_t func_;
-    // メンバー関数を直接呼び出す。
+    // メンバー関数を直接呼び出すサンクというかグルーコード。
     struct subclassproc_thunk : public Xbyak::CodeGenerator {
       subclassproc_thunk(LONG_PTR this_addr)
       {

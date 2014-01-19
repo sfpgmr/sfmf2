@@ -184,7 +184,10 @@ namespace sf
       renderer_->render();
     }
 
-
+    void video_bitmap(ID2D1Bitmap1Ptr& bitmap)
+    {
+      renderer_->video_bitmap() = bitmap;
+    }
 
 
     void on_player_event(HWND wnd, UINT_PTR wParam)
@@ -201,6 +204,7 @@ namespace sf
 
     void init_content()
     {
+      // 子ベース
       child_base_.reset(new sf::control_base(std::wstring(L"SFCHILD"), std::wstring(L"SFCHILD"),
         [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
       {
@@ -212,136 +216,213 @@ namespace sf
         }
         case WM_ERASEBKGND:
           return FALSE;
+        case WM_COMMAND:
+          // 子コントロールにメッセージを転送する
+          SendMessage((HWND)lParam, WM_COMMAND, wParam, lParam);
+          break;
+        case WM_NOTIFY:
+        {
+          // 子コントロールにメッセージを転送する
+          NMHDR* nmhdr((NMHDR*)lParam);
+          SendMessage(nmhdr->hwndFrom, WM_NOTIFY, wParam, lParam);
+
+        }
+          break;
         }
         return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
-      }, *this, 0, 0, 640, 480, (HMENU) 1, WS_EX_LAYERED, WS_CLIPSIBLINGS | WS_CHILD, HINST_THISCOMPONENT));
+      }, *this, 0, 0, width_, height_, (HMENU) 1, WS_EX_LAYERED, WS_CLIPSIBLINGS | WS_CHILD, HINST_THISCOMPONENT));
 
       SetLayeredWindowAttributes((HWND) child_base_->raw_handle(), RGB(0, 0, 0), 255, LWA_ALPHA | LWA_COLORKEY);
       ShowWindow((HWND) child_base_->raw_handle(), SW_SHOW);
 
+      // 元ファイル用テキストボックス
+      
       // ファイル選択ダイアログを表示するボタン
-      child_.reset(new sf::control_base(std::wstring(L"BUTTON"), std::wstring(L"元ファイル"),
+      src_path_btn_.reset(new sf::control_base(std::wstring(L"BUTTON"), std::wstring(L"元ファイル"),
         [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
       {
         static int count = 0;
         switch (uMsg){
-        case WM_LBUTTONDOWN:
+        case WM_ERASEBKGND:
+          return FALSE;
           break;
-        case WM_LBUTTONUP:
-        case WM_KEYUP:
-          //sf::message_box((HWND) base.raw_handle(), L"Test", L"Test");
-          DOUT(L"BUTTON PRESSED\n");
-          OPENFILENAMEW fn;
-          wchar_t file[MAX_PATH];
-          ZeroMemory(&fn, sizeof(fn));
-          fn.lStructSize = sizeof(fn);
-          fn.hwndOwner = hwnd_;
-          fn.nMaxFile = MAX_PATH;
-          fn.lpstrFile = file;
-          fn.lpstrFilter = L"*.WAV\0";
-          fn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-          fn.lpstrDefExt = L"WAV";
-          fn.nFilterIndex = 1;
-          fn.lpstrFile[0] = L'\0';
-          if (!GetOpenFileName(&fn))
-          {
-            DWORD errcd = GetLastError();
-            if (errcd != 0){
-              sf::local_memory<wchar_t> buf;
-              FormatMessage(				//エラー表示文字列作成
-                FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, errcd,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPTSTR) &buf, 0, NULL);
+        case WM_COMMAND:
+        {
+          switch (HIWORD(wParam)){
+          case BN_CLICKED:
+            //sf::message_box((HWND) base.raw_handle(), L"Test", L"Test");
+            DOUT(L"BUTTON PRESSED\n");
+            OPENFILENAMEW fn;
+            wchar_t file[MAX_PATH];
+            ZeroMemory(&fn, sizeof(fn));
+            fn.lStructSize = sizeof(fn);
+            fn.hwndOwner = hwnd_;
+            fn.nMaxFile = MAX_PATH;
+            fn.lpstrFile = file;
+            fn.lpstrFilter = L"*.WAV\0";
+            fn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+            fn.lpstrDefExt = L"WAV";
+            fn.nFilterIndex = 1;
+            fn.lpstrFile[0] = L'\0';
+            if (!GetOpenFileName(&fn))
+            {
+              DWORD errcd = GetLastError();
+              if (errcd != 0){
+                sf::local_memory<wchar_t> buf;
+                FormatMessage(				//エラー表示文字列作成
+                  FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                  FORMAT_MESSAGE_FROM_SYSTEM |
+                  FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL, errcd,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR) &buf, 0, NULL);
 
-              MessageBox(NULL, buf.get(), NULL, MB_OK);	//メッセージ表示
-            }
-          };
-          application::instance()->renderer_source_path(fn.lpstrFile);
-          break;
+                MessageBox(NULL, buf.get(), NULL, MB_OK);	//メッセージ表示
+              }
+            };
+            application::instance()->renderer_source_path(fn.lpstrFile);
+            send_message(src_path_text_, WM_SETTEXT, 0, (LPARAM)fn.lpstrFile);
+            break;
+          }
+         }
         }
         return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
-      }, *child_base_, 30, 30, 100, 100, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
+      }, *child_base_, 30, 30, 100, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
+
+      // エンコード元ファイル表示テキスト
+      src_path_text_.reset(new sf::control_base(std::wstring(L"STATIC"), std::wstring(L""),
+        [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
+      {
+        return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
+      }, *child_base_, 130, 30, 400, 30, (HMENU) 100, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON));
 
       // エンコード先ファイル表示ボタン
-      child2_.reset(new sf::control_base(std::wstring(L"BUTTON"), std::wstring(L"先ファイル"),
+      dest_path_btn_.reset(new sf::control_base(std::wstring(L"BUTTON"), std::wstring(L"先ファイル"),
         [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
       {
         static int count = 0;
         switch (uMsg){
-        case WM_LBUTTONDOWN:
-          break;
-        case WM_LBUTTONUP:
-        case WM_KEYUP:
-          //sf::message_box((HWND) base.raw_handle(), L"Test", L"Test");
-          DOUT(L"BUTTON PRESSED\n");
-          OPENFILENAMEW fn;
-          wchar_t file[MAX_PATH];
-          ZeroMemory(&fn, sizeof(fn));
-          fn.lStructSize = sizeof(fn);
-          fn.hwndOwner = hwnd_;
-          fn.nMaxFile = MAX_PATH;
-          fn.lpstrFile = file;
-          fn.lpstrFilter = L"*.M4V\0";
-          fn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-          fn.lpstrDefExt = L"M4V";
-          fn.nFilterIndex = 1;
-          fn.lpstrFile[0] = L'\0';
-          if (!GetSaveFileName(&fn))
-          {
-            DWORD errcd = GetLastError();
-            if (errcd != 0){
-              sf::local_memory<wchar_t> buf;
-              FormatMessage(				//エラー表示文字列作成
-                FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                FORMAT_MESSAGE_FROM_SYSTEM |
-                FORMAT_MESSAGE_IGNORE_INSERTS,
-                NULL, errcd,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                (LPTSTR) &buf, 0, NULL);
+        case WM_COMMAND:
+        {
+          switch (HIWORD(wParam)){
+          case BN_CLICKED:
+            //sf::message_box((HWND) base.raw_handle(), L"Test", L"Test");
+            DOUT(L"BUTTON PRESSED\n");
+            OPENFILENAMEW fn;
+            wchar_t file[MAX_PATH];
+            ZeroMemory(&fn, sizeof(fn));
+            fn.lStructSize = sizeof(fn);
+            fn.hwndOwner = hwnd_;
+            fn.nMaxFile = MAX_PATH;
+            fn.lpstrFile = file;
+            fn.lpstrFilter = L"*.M4V\0";
+            fn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+            fn.lpstrDefExt = L"M4V";
+            fn.nFilterIndex = 1;
+            fn.lpstrFile[0] = L'\0';
+            if (!GetSaveFileName(&fn))
+            {
+              DWORD errcd = GetLastError();
+              if (errcd != 0){
+                sf::local_memory<wchar_t> buf;
+                FormatMessage(				//エラー表示文字列作成
+                  FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                  FORMAT_MESSAGE_FROM_SYSTEM |
+                  FORMAT_MESSAGE_IGNORE_INSERTS,
+                  NULL, errcd,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                  (LPTSTR) &buf, 0, NULL);
 
-              MessageBox(NULL, buf.get(), NULL, MB_OK);	//メッセージ表示
-            }
-          };
-          application::instance()->renderer_target_path(fn.lpstrFile);
+                MessageBox(NULL, buf.get(), NULL, MB_OK);	//メッセージ表示
+              }
+            };
+            application::instance()->renderer_target_path(fn.lpstrFile);
+            break;
+          }
+        }
           break;
         }
         return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
-      }, *child_base_, 130, 30, 100, 100, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
+      }, *child_base_, 30, 60, 100, 30, (HMENU)100, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON));
+
+      // エンコード元ファイル表示テキスト
+      dest_path_text_.reset(new sf::control_base(std::wstring(L"STATIC"), std::wstring(L""),
+        [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
+      {
+        return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
+      }, *child_base_, 130, 60, 400, 30, (HMENU) 100, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_PUSHBUTTON));
 
 
-      // エンコード先ファイル表示ボタン
+      // 処理実行ボタン
       render_button_.reset(new sf::control_base(std::wstring(L"BUTTON"), std::wstring(L"実行"),
         [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
       {
         static int count = 0;
         switch (uMsg){
-        case WM_LBUTTONDOWN:
+        case WM_COMMAND:
+          {
+            switch (HIWORD(wParam)){
+            case BN_CLICKED:
+              auto* this_ptr = this;
+              application::instance()->execute_rendering(std::bind(&dcomposition_window::impl::progress, this_ptr, std::placeholders::_1));
+              break;
+            }
+          }
           break;
-        case WM_LBUTTONUP:
-        case WM_KEYUP:
-          auto* this_ptr = this;
-          application::instance()->execute_rendering(std::bind(&dcomposition_window::impl::progress,this_ptr,std::placeholders::_1));
-          break;
+
         }
         return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
-      }, *child_base_, 230, 30, 100, 100, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
+      }, *child_base_, 600, 30, 100, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
  
+      EnableWindow((HWND) render_button_->raw_handle(),FALSE);
       SetLayeredWindowAttributes((HWND) hwnd_, 0, 255, LWA_ALPHA);
+
+      application::instance()->renderer_enable_status_changed().connect(
+        [this](bool enabled) -> void{
+          EnableWindow((HWND) render_button_->raw_handle(), enabled ? TRUE : FALSE);
+        }
+       );
+
+       application::instance()->renderer_source_path_changed().connect(
+         [this]() -> void {
+           send_message(src_path_text_, WM_SETTEXT, 0, (LPARAM) application::instance()->renderer_source_path().c_str());
+         }
+       );
+
+       application::instance()->renderer_target_path_changed().connect(
+         [this]() -> void {
+         send_message(dest_path_text_, WM_SETTEXT, 0, (LPARAM) application::instance()->renderer_target_path().c_str());
+       }
+       );
 
       // テスト表示プログレスバー
       progress_.reset(new sf::control_base(std::wstring(PROGRESS_CLASS), std::wstring(L"テスト2"),
         [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
       {
         return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
-      }, *child_base_, 30, 400, 600, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
+      }, *child_base_, 30, 120, 600, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
 
+      // タイトルテキスト
+      title_text_.reset(new sf::control_base(std::wstring(L"EDIT"), std::wstring(L""),
+        [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
+      {
+        switch (uMsg){
+        case WM_COMMAND:
+          switch (HIWORD(wParam)){
+          case EN_CHANGE:
+            {
+              wchar_t ptmp[256];
+              Edit_GetText((HWND)lParam,ptmp,ARRAYSIZE(ptmp));
+              application::instance()->renderer_video_title().assign(ptmp);
+            }
+            break;
+          }
+          break;
+        }
+        return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
+      }, *child_base_, 30, 180, 600, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
 
-      //      sf::base_win32_window2_t::result_t result = sf::base_win32_window2_t::on_create(p);
       add_dcomp_content_to_root(*renderer_, (HWND) child_base_->raw_handle());
-      //     add_dcomp_content_to_root(*renderer_, (HWND) child2_->raw_handle());
 
     }
 
@@ -349,6 +430,8 @@ namespace sf
     {
       send_message(progress_, PBM_SETPOS, progress, 0);
     }
+
+
 
     base_win32_window2_t::result_t on_paint()
     {
@@ -410,7 +493,7 @@ namespace sf
     LRESULT on_close()
     {
       //slider_.detatch();
-      child_.reset();
+      src_path_btn_.reset();
       timer_.player_stop();
       // 後始末
       discard_device();
@@ -424,8 +507,9 @@ namespace sf
       return TRUE;
     }
 
-    LRESULT on_command(uint32_t wparam, uint32_t lparam)
+    LRESULT on_command(WPARAM wparam, LPARAM lparam)
     {
+      SendMessage((HWND)lparam, WM_COMMAND, wparam, lparam);
       return FALSE;
     }
 
@@ -482,7 +566,8 @@ namespace sf
     icon icon_;
     bool init_;
     sf::window_class_ex child_class_;
-    std::unique_ptr<control_base> child_base_, child_, child2_,render_button_, progress_;
+    std::unique_ptr<control_base> child_base_,src_path_text_,dest_path_text_, src_path_btn_, dest_path_btn_,render_button_, progress_,
+      title_text_;
     D2D1_SIZE_U icon_size_;
 
     // thisとhwndをつなぐthunkクラス
@@ -541,6 +626,10 @@ namespace sf
   void dcomposition_window::update(){ impl_->update(); };
   void dcomposition_window::render(){ impl_->render(); };
   // void dcomposition_window::player_ready(){impl_->player_ready();};
+  void dcomposition_window::video_bitmap(ID2D1Bitmap1Ptr& bitmap)
+  {
+    impl_->video_bitmap(bitmap);
+  }
 
 
   dcomposition_window_ptr create_dcomposition_window

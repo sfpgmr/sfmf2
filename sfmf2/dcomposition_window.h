@@ -69,7 +69,7 @@ namespace sf
     //std::wstring text()
     void update();
     void render();
-
+    void video_bitmap(ID2D1Bitmap1Ptr & bitmap);
   private:
     struct impl;
     dcomposition_window(const std::wstring& menu_name,const std::wstring& name,bool fit_to_display,float width = 800 ,float height = 600);
