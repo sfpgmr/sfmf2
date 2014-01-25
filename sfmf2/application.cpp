@@ -286,16 +286,17 @@ namespace sf {
   {
     renderer_enable_ = false;
     renderer_enable_status_changed_(renderer_enable_);
-    test_renderer_.reset(new test_renderer(renderer_source_path_, renderer_target_path_));
-    test_renderer_->title(renderer_video_title_);
-    test_renderer_->preview_updated().connect
+    video_renderer_.reset(new fft_renderer(renderer_source_path_, renderer_target_path_));
+    video_renderer_->init_params().title = renderer_video_title_;
+	video_renderer_->init_params().sample_length = fft_renderer::lengthTick / 2;
+    video_renderer_->preview_updated().connect
       (
       [this]() -> void {
         InvalidateRect((HWND)window_->raw_handle(),NULL,FALSE);
       }
       );
-    test_renderer_->progress().connect(progress);
-    test_renderer_->start();
+    video_renderer_->progress().connect(progress);
+    video_renderer_->start();
   }
 
   void application::video_bitmap(ID2D1Bitmap1Ptr& bitmap){

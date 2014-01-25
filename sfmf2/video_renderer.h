@@ -53,8 +53,8 @@ namespace sf{
     preview_updated_t& preview_updated();
 
     std::chrono::duration<double>& compute_time();
-    const std::wstring& title();
-    void title(const std::wstring& t);
+	typename Renderer::init_params_t& init_params();
+	static const DWORD lengthTick = 44100 /* Hz */ * 2 /* CH */ * 30 /* ms */ / 1000 /* ms */;
   private:
     struct impl;
     std::unique_ptr<impl> impl_;

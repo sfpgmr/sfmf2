@@ -46,14 +46,13 @@ void window_renderer::create_dcomp_resources()
   auto& d2d_context(graphics::instance()->d2d_context());
   auto& write_factory(graphics::instance()->write_factory());
 
-
   IDCompositionSurfacePtr dcomp_surf;
   RECT surf_rect = { 0, 0, 200, 200 };
 
   CHK(dcomp_device2->CreateSurface(surf_rect.right, surf_rect.bottom, swap_chain_desc_.Format, DXGI_ALPHA_MODE_PREMULTIPLIED, &dcomp_surf));
   IDXGISurfacePtr dxgi_surf;
   POINT offset;
-
+  /*
   CHK(dcomp_surf->BeginDraw(&surf_rect, IID_PPV_ARGS(&dxgi_surf), &offset));
 
   D2D1_BITMAP_PROPERTIES1 bitmap_prop = D2D1::BitmapProperties1(
@@ -108,8 +107,9 @@ void window_renderer::create_dcomp_resources()
 
   d2d_context->EndDraw();
   dcomp_surf->EndDraw();
-  brush.Reset();
 
+  brush.Reset();
+  */
 
   IDCompositionVisual2Ptr v, v1, v2, v3, v4, v5;
   CHK(dcomp_device2->CreateVisual(&v));
@@ -125,6 +125,7 @@ void window_renderer::create_dcomp_resources()
 
   dcomp_target_->SetRoot(v.Get());
 
+  /*
   CHK(dcomp_device2->CreateVisual(&v1));
   CHK(v1->SetContent(dcomp_surf.Get()));
   CHK(dcomp_device2->CreateVisual(&v2));
@@ -240,12 +241,11 @@ void window_renderer::create_dcomp_resources()
     v1->SetEffect(effect.Get());
     //v5->SetEffect(effect.Get());
   }
-
+*/
   dcomp_device2->Commit();
   graphics::instance()->dcomp_desktop_device()->Commit();
 
-  d2d_context->SetTarget(backup.Get());
-
+  //d2d_context->SetTarget(backup.Get());
 }
 
 void window_renderer::create_swap_chain(bool fullscreen)

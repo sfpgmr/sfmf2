@@ -40,7 +40,8 @@ struct cb_changes_every_frame
   //    DirectX::XMFLOAT4 vMeshColor;
 };
 
-test_renderer_base::test_renderer_base(video_renderer_resources& res,std::wstring& t) : res_(res), time_(0)
+test_renderer_base::test_renderer_base(video_renderer_resources& res, test_renderer_base::init_params_t& t) : text_(t.title),
+res_(res), time_(0)
 {
   ///////////////////////////////////////////////////////////////////
   // Direct3Dリソースの生成
@@ -290,7 +291,6 @@ test_renderer_base::test_renderer_base(video_renderer_resources& res,std::wstrin
 
   CHK(graphics::instance()->d2d_factory()->CreateDrawingStateBlock(&state_));
 
-  title(t);
 
   application::instance()->video_bitmap(res.video_bitmap);
 
@@ -304,25 +304,20 @@ test_renderer_base::test_renderer_base(video_renderer_resources& res,std::wstrin
   //res_.d2d_context->SetTransform(mat2d);
 
   //init_ = true;// 初期化完了
-}
-
-
-void test_renderer_base::title(const std::wstring& t)
-{
-  text_.assign(t);
   CHK(
-    graphics::instance()->write_factory()->CreateTextLayout(
-    text_.c_str(),
-    (uint32) text_.length(),
-    text_format_.Get(),
-    res_.width, // 入力テキストの最大幅。
-    40.0f, // 入力テキストの最大高さ。
-    &text_layout_
-    )
-    );
+	  graphics::instance()->write_factory()->CreateTextLayout(
+	  text_.c_str(),
+	  (uint32) text_.length(),
+	  text_format_.Get(),
+	  res_.width, // 入力テキストの最大幅。
+	  40.0f, // 入力テキストの最大高さ。
+	  &text_layout_
+	  )
+	  );
   CHK(text_layout_->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING));
   CHK(text_layout_->GetMetrics(&text_metrics_));
 }
+
 
 void test_renderer_base::init_view_matrix()
 {

@@ -106,6 +106,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <AdditionalOptions>/Zm200  /D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <CallingConvention>Cdecl</CallingConvention>
+      <CompileAsWinRT>true</CompileAsWinRT>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -166,6 +167,7 @@
     <ClCompile Include="dcomposition_window.cpp" />
     <ClCompile Include="dpi.cpp" />
     <ClCompile Include="exception.cpp" />
+    <ClCompile Include="fft_renderer.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="info_tab_dialog.cpp" />
@@ -223,6 +225,7 @@
     <ClInclude Include="debugout.h" />
     <ClInclude Include="dpi.h" />
     <ClInclude Include="exception.h" />
+    <ClInclude Include="fft_renderer.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="info_tab_dialog.h" />

@@ -37,7 +37,8 @@
 #include "sequencer.h"
 #include "midi_device_manager.h"
 #include "graphics.h"
-#include "test_renderer.h"
+//#include "test_renderer.h"
+#include "fft_renderer.h"
 
 
 namespace sf {
@@ -165,7 +166,7 @@ namespace sf {
     // ----------------------------
   public:
     
-    std::unique_ptr<test_renderer>& renderer(){ return test_renderer_; }
+    std::unique_ptr<fft_renderer>& renderer(){ return video_renderer_; }
 
     void renderer_source_path(const std::wstring& path)
     { 
@@ -218,7 +219,7 @@ namespace sf {
    bool renderer_enable_;
     std::wstring renderer_source_path_;
     std::wstring renderer_target_path_;
-    std::unique_ptr<test_renderer> test_renderer_;
+    std::unique_ptr<fft_renderer> video_renderer_;
     renderer_source_path_changed_t renderer_source_path_changed_;
     renderer_target_path_changed_t renderer_target_path_changed_;
     renderer_enable_status_changed_t renderer_enable_status_changed_;

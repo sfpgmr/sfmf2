@@ -2,19 +2,19 @@
 #include "video_renderer.h"
 
 namespace sf{
-  class test_renderer_base
+  class fft_renderer_base
   {
   public:
-	struct init_params_t {
-		std::wstring title;
-	};
-	explicit test_renderer_base(sf::video_renderer_resources& res, init_params_t& t);
-//    const std::wstring& title(){ return text_; }
-//    void title(const std::wstring& t);
+	  struct init_params_t {
+		  std::wstring title;
+		  int sample_length;
+	  };
+	  explicit fft_renderer_base(sf::video_renderer_resources& res, init_params_t& p);
+
     void init_view_matrix();
     void discard();
     void render(LONGLONG t,INT16* wave_data,int length);
-    virtual ~test_renderer_base();
+    virtual ~fft_renderer_base();
   private:
     sf::video_renderer_resources res_;
     LONGLONG time_;
@@ -42,8 +42,20 @@ namespace sf{
     DirectX::XMMATRIX mat_projection_;
     DirectX::XMFLOAT4 mesh_color_;
 
+	int length_;
+
+	std::unique_ptr<double []> a_;
+	std::unique_ptr<double []> w_;
+	std::unique_ptr<int []> ip_;
+	std::unique_ptr<double []> log_;
+
+	std::unique_ptr<double[]> a_1_;
+	std::unique_ptr<double[]> w_1_;
+	std::unique_ptr<int[]> ip_1_;
+	std::unique_ptr<double[]> log_1_;
+
   };
 
-  typedef h264_renderer<test_renderer_base> test_renderer;
+  typedef h264_renderer<fft_renderer_base> fft_renderer;
 }
 

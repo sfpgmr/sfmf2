@@ -2,6 +2,7 @@
 #include "graphics.h"
 #include "video_renderer.h"
 #include "test_renderer.h"
+#include "fft_renderer.h"
 #include "sf_windows_base.h"
 #include "control_base.h"
 #include "application.h"
@@ -16,7 +17,6 @@
 using namespace sf;
 using namespace Concurrency;
 
-
 struct VertexVideo {
   DirectX::XMFLOAT2 pos;	//x,y,z
   DirectX::XMFLOAT2 uv;	//u,v
@@ -25,7 +25,7 @@ struct VertexVideo {
 template <typename Renderer>
 struct h264_renderer<Renderer>::impl 
 {
-  impl(std::wstring& source, std::wstring& destination, int width, int height) : source_(source), destination_(destination), width_(width), height_(height)
+	impl(std::wstring& source, std::wstring& destination, int width, int height) : source_(source), destination_(destination), width_(width), height_(height)
   {}
   ~impl(){}
   void run()
@@ -74,12 +74,14 @@ struct h264_renderer<Renderer>::impl
   const std::wstring& title(){ return title_; }
   void title(const std::wstring& t){ title_ = t; }
 
+  typename Renderer::init_params_t& init_params(){ return init_params_; }
+
 private:
 
   void init()
   {
     init_graphics();
-    renderer_.reset(new Renderer(video_renderer_resources(width_, height_, d3d_context_, video_resource_view_, video_render_target_view_, video_depth_view_, video_texture_, video_depth_texture_, video_bitmap_, d2d_context_), title_));
+    renderer_.reset(new Renderer(video_renderer_resources(width_, height_, d3d_context_, video_resource_view_, video_render_target_view_, video_depth_view_, video_texture_, video_depth_texture_, video_bitmap_, d2d_context_), init_params_));
     audio_reader_.reset(new audio_reader(source_));
     video_writer_.reset(new video_writer(destination_,audio_reader_->current_media_type(),width_,height_));
   }
@@ -242,7 +244,6 @@ private:
     IMFMediaBufferPtr buffer;
     CHK(sample->GetBufferByIndex(0, &buffer));
     INT16* waveBuffer;
-    const DWORD lengthTick = 44100 /* Hz */ * 2 /* CH */ * 30 /* ms */ / 1000 /* ms */;
     DWORD startPos = 0;
     CHK(buffer->Lock((BYTE**) &waveBuffer, nullptr, nullptr));
     DWORD totalLength;
@@ -315,7 +316,7 @@ private:
   ID2D1Bitmap1Ptr video_bitmap_;// Direct2D用ビデオビットマップ
   ID2D1DeviceContext1Ptr d2d_context_;// コンテキスト
   std::unique_ptr<Renderer> renderer_;//実際に描画処理を行うレンダラ
-
+  typename Renderer::init_params_t init_params_;
   std::unique_ptr<video_writer> video_writer_;
   std::unique_ptr<audio_reader> audio_reader_;
 
@@ -367,15 +368,11 @@ template <typename Renderer>
 typename h264_renderer<Renderer>::preview_updated_t& h264_renderer<Renderer>::preview_updated(){
   return impl_->preview_updated();
 };
-template <typename Renderer>
-const std::wstring& h264_renderer<Renderer>::title(){
-  return impl_->title();
-};
 
 template <typename Renderer>
-void h264_renderer<Renderer>::title(const std::wstring& t){
-  return impl_->title(t);
+typename Renderer::init_params_t& h264_renderer<Renderer>::init_params(){
+	return impl_->init_params();
 };
-
 
 template  class h264_renderer<test_renderer_base>;
+template  class h264_renderer<fft_renderer_base>;
