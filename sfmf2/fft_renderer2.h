@@ -2,20 +2,20 @@
 #include "video_renderer.h"
 
 namespace sf{
-  class fft_renderer_base
+  class fft_renderer2_base
   {
   public:
     struct init_params_t {
       std::wstring title;
       int sample_length;
     };
-    explicit fft_renderer_base(sf::video_renderer_resources& res, init_params_t& p);
+    explicit fft_renderer2_base(sf::video_renderer_resources& res, init_params_t& p);
 
     void init_view_matrix();
     void discard();
     void render(LONGLONG t, INT16* wave_data, int length);
     void render(LONGLONG t, int samplepos, audio_samples_t& audio_samples);
-    virtual ~fft_renderer_base();
+    virtual ~fft_renderer2_base();
   private:
     sf::video_renderer_resources res_;
     LONGLONG time_;
@@ -61,8 +61,7 @@ namespace sf{
 
   };
 
-  typedef h264_renderer<fft_renderer_base> fft_renderer;
-  typedef h264_renderer2<fft_renderer_base> fft_renderer2;
+  typedef h264_renderer2<fft_renderer2_base> fft_renderer2_1;
 
 }
 

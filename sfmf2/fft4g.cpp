@@ -1,5 +1,5 @@
 #include "stdafx.h"
-
+#include "fft4g.h"
 /*
 Fast Fourier/Cosine/Sine Transform
     dimension   :one

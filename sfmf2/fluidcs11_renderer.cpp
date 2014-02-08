@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "application.h"
 #include "graphics.h"
-#include "fft_renderer.h"
+#include "fft_renderer2.h"
 #include "fft4g.h"
-
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -81,7 +80,7 @@ inline D2D1_COLOR_F hsv2rgb(double h, double s, double v,double alpha = 1.0)
 
   return D2D1::ColorF(r,g,b,alpha);
 }
-fft_renderer_base::fft_renderer_base(video_renderer_resources& res, fft_renderer_base::init_params_t& p) : text_(p.title), res_(res), time_(0)
+fft_renderer2_base::fft_renderer2_base(video_renderer_resources& res, fft_renderer2_base::init_params_t& p) : text_(p.title), res_(res), time_(0)
 {
 	///////////////////////////////////////////////////////////////////
 	// Direct3DƒŠƒ\[ƒX‚Ì¶¬
@@ -383,7 +382,7 @@ fft_renderer_base::fft_renderer_base(video_renderer_resources& res, fft_renderer
 }
 
 
-void fft_renderer_base::init_view_matrix()
+void fft_renderer2_base::init_view_matrix()
 {
 	auto& d3d_context(res_.d3d_context);
 
@@ -407,7 +406,7 @@ void fft_renderer_base::init_view_matrix()
 	d3d_context->UpdateSubresource(cb_change_on_resize_.Get(), 0, NULL, &ccor, 0, 0);
 }
 
-void fft_renderer_base::render(LONGLONG t, int samplepos, audio_samples_t& audio_samples)
+void fft_renderer2_base::render(LONGLONG t, int samplepos, audio_samples_t& audio_samples)
 {
 
   auto& d3d_context(res_.d3d_context);
@@ -629,7 +628,7 @@ void fft_renderer_base::render(LONGLONG t, int samplepos, audio_samples_t& audio
 
   context->RestoreDrawingState(state_.Get());
 }
-void fft_renderer_base::render(LONGLONG time, INT16* wave_data, int length)
+void fft_renderer2_base::render(LONGLONG time, INT16* wave_data, int length)
 {
 
 	auto& d3d_context(res_.d3d_context);
@@ -785,7 +784,7 @@ void fft_renderer_base::render(LONGLONG time, INT16* wave_data, int length)
 	context->RestoreDrawingState(state_.Get());
 }
 
-fft_renderer_base::~fft_renderer_base()
+fft_renderer2_base::~fft_renderer2_base()
 {
 }
 
