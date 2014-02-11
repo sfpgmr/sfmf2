@@ -85,11 +85,6 @@ namespace sf
     //    DirectX::XMFLOAT4 vMeshColor;
   };
 
-  LRESULT CALLBACK dummyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-  {
-    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
-  }
-
   struct dcomposition_window::impl : public base_win32_window2_t
   {
 
@@ -251,10 +246,14 @@ namespace sf
           switch (HIWORD(wParam)){
           case BN_CLICKED:
             //sf::message_box((HWND) base.raw_handle(), L"Test", L"Test");
+            application& app(*application::instance());
             DOUT(L"BUTTON PRESSED\n");
             OPENFILENAMEW fn;
             wchar_t file[MAX_PATH];
             ZeroMemory(&fn, sizeof(fn));
+            if (app.renderer_target_path().size() > 0){
+              _tcscpy(file, app.renderer_source_path().c_str());
+            }
             fn.lStructSize = sizeof(fn);
             fn.hwndOwner = hwnd_;
             fn.nMaxFile = MAX_PATH;
@@ -279,9 +278,13 @@ namespace sf
 
                 MessageBox(NULL, buf.get(), NULL, MB_OK);	//メッセージ表示
               }
-            };
-            application::instance()->renderer_source_path(fn.lpstrFile);
-            send_message(src_path_text_, WM_SETTEXT, 0, (LPARAM)fn.lpstrFile);
+
+            }
+            else {
+              //            boost::filesystem::path p(fn.lpstrFile);
+              application::instance()->renderer_source_path(fn.lpstrFile);
+              //send_message(src_path_text_, WM_SETTEXT, 0, (LPARAM)fn.lpstrFile);
+            }
             break;
           }
          }
@@ -306,11 +309,15 @@ namespace sf
         {
           switch (HIWORD(wParam)){
           case BN_CLICKED:
+            application& app(*application::instance());
             //sf::message_box((HWND) base.raw_handle(), L"Test", L"Test");
             DOUT(L"BUTTON PRESSED\n");
             OPENFILENAMEW fn;
             wchar_t file[MAX_PATH];
             ZeroMemory(&fn, sizeof(fn));
+            if (app.renderer_source_path().size() > 0){
+              _tcscpy(file, app.renderer_source_path().c_str());
+            }
             fn.lStructSize = sizeof(fn);
             fn.hwndOwner = hwnd_;
             fn.nMaxFile = MAX_PATH;
@@ -335,8 +342,10 @@ namespace sf
 
                 MessageBox(NULL, buf.get(), NULL, MB_OK);	//メッセージ表示
               }
-            };
-            application::instance()->renderer_target_path(fn.lpstrFile);
+            }
+            else{
+              application::instance()->renderer_target_path(fn.lpstrFile);
+            }
             break;
           }
         }
@@ -380,6 +389,9 @@ namespace sf
       application::instance()->renderer_enable_status_changed().connect(
         [this](bool enabled) -> void{
           EnableWindow((HWND) render_button_->raw_handle(), enabled ? TRUE : FALSE);
+          if (enabled){
+            post_message(render_button_,WM_SETFOCUS,NULL,NULL);
+          }
         }
        );
 

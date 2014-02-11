@@ -28,7 +28,8 @@
 #include "async_reader.h"
 #include "sf_memory.h"
 #include "toplevel_window.h"
-#include "dcomposition_window.h"
+//#include "dcomposition_window.h"
+#include "fluidcs11_window.h"
 #include "Player.h"
 #include "reader_agent.h"
 #include "output_agent.h"
@@ -39,6 +40,7 @@
 #include "graphics.h"
 //#include "test_renderer.h"
 #include "fft_renderer.h"
+#include "fluidcs11_renderer.h"
 
 
 namespace sf {
@@ -159,18 +161,25 @@ namespace sf {
 
   private:
     std::wstring base_directory_;
-    sf::dcomposition_window_ptr window_;
+    sf::fluidcs11_window_ptr window_;
 
     // ----------------------------
     // H.264 レンダラー
     // ----------------------------
   public:
     
-    std::unique_ptr<fft_renderer>& renderer(){ return video_renderer_; }
+    std::unique_ptr<fluidcs11_renderer>& renderer(){ return video_renderer_; }
 
     void renderer_source_path(const std::wstring& path)
     { 
       renderer_source_path_ = path; 
+
+      if (renderer_target_path().size() == 0)
+      {
+        boost::filesystem::path p(path);
+        p = p.replace_extension(boost::filesystem::path(L"mp4"));
+        renderer_target_path(p.native());
+      }
       renderer_source_path_changed_();
       check_enable();
     }
@@ -219,7 +228,7 @@ namespace sf {
    bool renderer_enable_;
     std::wstring renderer_source_path_;
     std::wstring renderer_target_path_;
-    std::unique_ptr<fft_renderer> video_renderer_;
+    std::unique_ptr<fluidcs11_renderer> video_renderer_;
     renderer_source_path_changed_t renderer_source_path_changed_;
     renderer_target_path_changed_t renderer_target_path_changed_;
     renderer_enable_status_changed_t renderer_enable_status_changed_;

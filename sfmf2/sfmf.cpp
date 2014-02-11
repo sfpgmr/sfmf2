@@ -435,7 +435,7 @@ video_writer::video_writer(
   {
     const unsigned int WIDTH = width_;
     const unsigned int HEIGHT = height_;
-    const unsigned int BITRATE = 3000000;
+    const unsigned int BITRATE = 6000000;
     const unsigned int ASPECT_NUM = 1;
     const unsigned int ASPECT_DENOM = 1;
     const unsigned long  BPP_IN = 32;
@@ -669,9 +669,16 @@ video_writer::video_writer(
   DWORD audio_reader::read_sample(IMFSamplePtr& sample)
   {
     DWORD streamIndex, flags;
-    CHK(reader_->ReadSample(0, 0, &streamIndex, &flags, &video_sample_time_, sample.ReleaseAndGetAddressOf()));
+    LONGLONG time;
+    CHK(reader_->ReadSample(0, 0, &streamIndex, &flags, &time, sample.ReleaseAndGetAddressOf()));
+    if (!(flags & MF_SOURCE_READERF_ENDOFSTREAM)){
+      video_sample_time_ = time;
+    }
     return flags;
   }
+
+ 
+
 }
 
 

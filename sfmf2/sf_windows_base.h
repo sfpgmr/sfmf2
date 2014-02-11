@@ -721,4 +721,9 @@ namespace sf{
     DWORD thread_id_;
   };
 
+  inline LRESULT CALLBACK dummyProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+  {
+    return DefWindowProcW(hwnd, uMsg, wParam, lParam);
+  }
+
 }

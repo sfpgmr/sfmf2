@@ -13,7 +13,8 @@ namespace sf{
 //    void title(const std::wstring& t);
     void init_view_matrix();
     void discard();
-    void render(LONGLONG t,INT16* wave_data,int length);
+    void render(LONGLONG t, INT16* wave_data, int length);
+    void render(LONGLONG t, int samplepos, audio_samples_t& audio_samples){};
     virtual ~test_renderer_base();
   private:
     sf::video_renderer_resources res_;

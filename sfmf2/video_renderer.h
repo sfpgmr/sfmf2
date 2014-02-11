@@ -1,6 +1,8 @@
 #pragma once
 namespace sf{
 
+  typedef std::array<std::vector<double>, 2> audio_samples_t;
+
   struct video_renderer_resources
   {
     video_renderer_resources(int w, int h
@@ -46,18 +48,26 @@ namespace sf{
     typedef boost::signals2::signal<void(std::chrono::duration<double>&)> complete_t;
     typedef boost::signals2::signal<void()> preview_updated_t;
     h264_renderer(std::wstring& source, std::wstring& destination, unsigned int width = 1280, unsigned int height = 720);
-    void run();
+    virtual void run();
     virtual ~h264_renderer();
     progress_t& progress();
     complete_t& complete();
     preview_updated_t& preview_updated();
 
     std::chrono::duration<double>& compute_time();
-	typename Renderer::init_params_t& init_params();
-	static const DWORD lengthTick = 44100 /* Hz */ * 2 /* CH */ * 30 /* ms */ / 1000 /* ms */;
-  private:
+  	typename Renderer::init_params_t& init_params();
+  	static const DWORD lengthTick = 44100 /* Hz */ * 2 /* CH */ * 30 /* ms */ / 1000 /* ms */;
+  protected:
     struct impl;
     std::unique_ptr<impl> impl_;
+  };
+
+  template <typename Renderer>
+  class h264_renderer2 : public h264_renderer<Renderer>
+  {
+  public:
+    h264_renderer2(std::wstring& source, std::wstring& destination, unsigned int width = 1280, unsigned int height = 720);
+    void run() override;
   };
 }
 

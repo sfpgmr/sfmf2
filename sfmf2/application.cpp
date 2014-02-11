@@ -137,8 +137,8 @@ namespace sf {
     const midi_device_manager::ptr& ptr = midi_device_manager::instance();
 
     // ウィンドウを作成する
-    window_ = sf::create_dcomposition_window(
-      std::wstring(L"DirectComposition サンプル"), std::wstring(L"DirectComposition サンプル"), 5, false, 1024, 768);
+    window_ = sf::create_fluidcs11_window(
+      std::wstring(L"WAVファイルから動画ファイルを生成する"), std::wstring(L"WAVファイルから動画ファイルを生成する"), 5, false, 1024, 768);
     // std::wstring(L"DirectComposition サンプル"), std::wstring(L"DirectComposition サンプル"), 5, false, ::GetSystemMetrics(SM_CXSCREEN), ::GetSystemMetrics(SM_CYSCREEN));
     ////  ファイルリーダーエージェントの起動
     reader_agent_.start();
@@ -162,8 +162,8 @@ namespace sf {
 
     }
 
-    reader_agent_.setup(L"test2.wav");
-    reader_agent_.read_file();
+    //reader_agent_.setup(L"test2.wav");
+    //reader_agent_.read_file();
 
     // メッセージ処理ループ
     WPARAM ret = sf::run_message_loop()();
@@ -286,9 +286,9 @@ namespace sf {
   {
     renderer_enable_ = false;
     renderer_enable_status_changed_(renderer_enable_);
-    video_renderer_.reset(new fft_renderer(renderer_source_path_, renderer_target_path_));
+    video_renderer_.reset(new fluidcs11_renderer(renderer_source_path_, renderer_target_path_));
     video_renderer_->init_params().title = renderer_video_title_;
-	video_renderer_->init_params().sample_length = fft_renderer::lengthTick / 2;
+    video_renderer_->init_params().sample_length = 4096;//fft_renderer::lengthTick / 2;
     video_renderer_->preview_updated().connect
       (
       [this]() -> void {

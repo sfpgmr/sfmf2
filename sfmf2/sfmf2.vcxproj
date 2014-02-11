@@ -107,6 +107,9 @@
       <AdditionalOptions>/Zm200  /D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAsWinRT>true</CompileAsWinRT>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <StructMemberAlignment>Default</StructMemberAlignment>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -167,7 +170,11 @@
     <ClCompile Include="dcomposition_window.cpp" />
     <ClCompile Include="dpi.cpp" />
     <ClCompile Include="exception.cpp" />
+    <ClCompile Include="fft4g.cpp" />
     <ClCompile Include="fft_renderer.cpp" />
+    <ClCompile Include="fft_renderer2.cpp" />
+    <ClCompile Include="fluidcs11_renderer.cpp" />
+    <ClCompile Include="fluidcs11_window.cpp" />
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="icon.cpp" />
     <ClCompile Include="info_tab_dialog.cpp" />
@@ -207,6 +214,7 @@
     <ClCompile Include="video_renderer.cpp" />
     <ClCompile Include="wasapi_base.cpp" />
     <ClCompile Include="wasapi_manager.cpp" />
+    <ClCompile Include="wavelet_renderer.cpp" />
     <ClCompile Include="winmain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -225,7 +233,11 @@
     <ClInclude Include="debugout.h" />
     <ClInclude Include="dpi.h" />
     <ClInclude Include="exception.h" />
+    <ClInclude Include="fft4g.h" />
     <ClInclude Include="fft_renderer.h" />
+    <ClInclude Include="fft_renderer2.h" />
+    <ClInclude Include="fluidcs11_renderer.h" />
+    <ClInclude Include="fluidcs11_window.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="icon.h" />
     <ClInclude Include="info_tab_dialog.h" />
@@ -267,6 +279,7 @@
     <ClInclude Include="ui_renderer.h" />
     <ClInclude Include="video_renderer.h" />
     <ClInclude Include="wasapi.h" />
+    <ClInclude Include="wavelet_renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\libs\DirectXTK\DirectXTK_Desktop_2013.sln" />

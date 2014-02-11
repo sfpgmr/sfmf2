@@ -3,6 +3,9 @@
 #include "video_renderer.h"
 #include "test_renderer.h"
 #include "fft_renderer.h"
+#include "fft_renderer2.h"
+#include "wavelet_renderer.h"
+#include "fluidcs11_renderer.h"
 #include "sf_windows_base.h"
 #include "control_base.h"
 #include "application.h"
@@ -28,6 +31,7 @@ struct h264_renderer<Renderer>::impl
 	impl(std::wstring& source, std::wstring& destination, int width, int height) : source_(source), destination_(destination), width_(width), height_(height)
   {}
   ~impl(){}
+
   void run()
   {
     sf::com_initialize com_init;
@@ -44,6 +48,33 @@ struct h264_renderer<Renderer>::impl
     concurrency::timer<int> preview_timer(100,0,&preview_timer_func,true);
     preview_timer.start();
     render();
+    preview_timer.stop();
+    clean_up();
+    end = std::chrono::system_clock::now();
+    compute_time_ = end - start;
+
+    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+    DOUT(boost::wformat(L"compute time: %f \n") % compute_time_.count());
+    complete_(compute_time_);
+  }
+
+  void run2()
+  {
+    sf::com_initialize com_init;
+    sf::auto_mf mf;
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+    init();
+
+    concurrency::call<int> preview_timer_func([this](int v)-> void {
+      preview_updated_();
+    }
+    );
+
+    concurrency::timer<int> preview_timer(100, 0, &preview_timer_func, true);
+    preview_timer.start();
+    render2();
     preview_timer.stop();
     clean_up();
     end = std::chrono::system_clock::now();
@@ -205,6 +236,8 @@ private:
     int progress = 0;
     int progress_bkp = 0;
 
+    // オーディオサンプルの読み書き
+
     while (true)
     {
       IMFSamplePtr sample;
@@ -237,6 +270,98 @@ private:
     }
   }
 
+  // 改良版 ビデオ・オーディオレンダラー
+  void render2(){
+    DWORD status = 0;
+    video_time_ = 0;
+    LONGLONG read_size = 0;
+
+    int progress = 0;
+    int progress_bkp = 0;
+
+    // オーディオサンプルの読み書き
+    audio_samples_[0].clear();
+    audio_samples_[1].clear();
+
+    while (true)
+    {
+      IMFSamplePtr sample;
+      // オーディオサンプルを読み込む
+      status = audio_reader_->read_sample(sample);
+
+      if ((status & MF_SOURCE_READERF_ENDOFSTREAM)) {
+        // EOFもしくは中断したらファイナライズ処理を行う
+        progress_(50);
+        break;
+      }
+
+      // バッファへの書き込み
+      {
+        IMFMediaBufferPtr buffer;
+        CHK(sample->GetBufferByIndex(0, &buffer));
+        INT16* waveBuffer;
+        DWORD startPos = 0;
+        CHK(buffer->Lock((BYTE**) &waveBuffer, nullptr, nullptr));
+        DWORD totalLength;
+        CHK(buffer->GetCurrentLength(&totalLength));
+        totalLength /= 4;
+        for (int i = 0; i < totalLength; ++i){
+          audio_samples_[0].push_back(double(*waveBuffer++) / 32768.0);
+          audio_samples_[1].push_back(double(*waveBuffer++) / 32768.0);
+        }
+        CHK(buffer->Unlock());
+      }
+
+
+      DWORD size = 0;
+      sample->GetTotalLength(&size);
+      read_size += size;
+
+      video_writer_->write_audio_sample(sample.Get());
+      progress = (int) (read_size * (LONGLONG) 100 / audio_reader_->size());
+      if (progress > progress_bkp){
+        progress_(progress/2);
+        progress_bkp = progress;
+      }
+    }
+
+    // ビデオ・サンプルの書き込み
+    video_time_ = lengthTick  / 4;
+    video_step_time_ = lengthTick / 2;
+
+    size_t sample_pos = 0;
+    size_t end = audio_samples_[0].size();
+    LONGLONG end_time = audio_reader_->sample_time();
+    progress_bkp = 0;
+    while (end_time > video_writer_->video_sample_time() && sample_pos < end)
+    {
+      render_to_video2(sample_pos);
+      progress = (int) (video_writer_->video_sample_time() * (LONGLONG) 100 / end_time);
+      if (progress > progress_bkp){
+        progress_(progress);
+        progress_bkp = progress;
+      }
+      sample_pos += 44100 / 30;//lengthTick / 2;
+    }
+    video_writer_->finalize();
+  }
+
+  void render_to_video2(int samplepos)
+  {
+    // Direct3Dでオフスクリーンにレンダリングし、そのデータを書き込む
+
+    // コンテキストの競合を回避するためにロックする
+    critical_section::scoped_lock lock(application::instance()->video_critical_section());
+
+    renderer_->render(video_writer_->video_sample_time(), samplepos, audio_samples_);
+    // 描画したテクスチャデータをステージテクスチャにコピーする
+    d3d_context_->CopyResource(video_stage_texture_.Get(), video_texture_.Get());
+    // ビデオデータを作成し、サンプルに収める
+    video_writer_->set_texture_to_sample(d3d_context_.Get(), video_stage_texture_.Get());
+    // ビデオデータを書き込む
+    video_writer_->write_video_sample();
+
+  }
 
   void render_to_video(IMFSamplePtr& sample)
   {
@@ -328,6 +453,10 @@ private:
   typename sf::h264_renderer<Renderer>::progress_t progress_;
   typename sf::h264_renderer<Renderer>::complete_t complete_;
   typename sf::h264_renderer<Renderer>::preview_updated_t preview_updated_;
+
+  // ステレオサンプルを保存する
+  audio_samples_t audio_samples_;
+
 };
 
 template <typename Renderer>
@@ -374,5 +503,32 @@ typename Renderer::init_params_t& h264_renderer<Renderer>::init_params(){
 	return impl_->init_params();
 };
 
+/////////////////////////////////////////////////////////////
+// h264_renderer2 
+/////////////////////////////////////////////////////////////
+
+template <typename Renderer>
+h264_renderer2<Renderer>::h264_renderer2(std::wstring& source, std::wstring& destination, unsigned int width, unsigned int height) : 
+  h264_renderer<Renderer>(source,destination,  width,  height)
+{
+
+}
+
+template <typename Renderer>
+void h264_renderer2<Renderer>::run()
+{
+  impl_->run2();
+  agent::done();
+}
+
+
 template  class h264_renderer<test_renderer_base>;
 template  class h264_renderer<fft_renderer_base>;
+template  class h264_renderer2<fft_renderer_base>;
+template  class h264_renderer2<fft_renderer2_base>;
+template  class h264_renderer<wavelet_renderer_base>;
+template  class h264_renderer2<fluidcs11_renderer_base>;
+template  class h264_renderer<fluidcs11_renderer_base>;
+
+
+
