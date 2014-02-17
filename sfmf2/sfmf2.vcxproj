@@ -75,6 +75,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <LibraryPath>H:\libs\Box2D\Build\vs2012\bin\Debug;H:\libs\DirectXTK\Bin\Desktop_2013\x64\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>H:\satoshi_documents\documents\Visual Studio 2013\Projects\sfmf2\sfmf2\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -108,7 +109,7 @@
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAsWinRT>true</CompileAsWinRT>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <StructMemberAlignment>Default</StructMemberAlignment>
     </ClCompile>
     <Link>
@@ -117,7 +118,7 @@
       <AdditionalDependencies>Comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
-      <AdditionalManifestFiles>sfmf2.manifest</AdditionalManifestFiles>
+      <AdditionalManifestFiles>source\sfmf2.manifest</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -160,147 +161,128 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="agent_base.cpp" />
-    <ClCompile Include="application.cpp" />
-    <ClCompile Include="async_reader.cpp" />
-    <ClCompile Include="base_window.cpp" />
-    <ClCompile Include="code_converter.cpp" />
-    <ClCompile Include="config_tab_dialog.cpp" />
-    <ClCompile Include="control_base.cpp" />
-    <ClCompile Include="dcomposition_window.cpp" />
-    <ClCompile Include="dpi.cpp" />
-    <ClCompile Include="exception.cpp" />
-    <ClCompile Include="fft4g.cpp" />
-    <ClCompile Include="fft_renderer.cpp" />
-    <ClCompile Include="fft_renderer2.cpp" />
-    <ClCompile Include="fluidcs11_renderer.cpp" />
-    <ClCompile Include="fluidcs11_window.cpp" />
-    <ClCompile Include="graphics.cpp" />
-    <ClCompile Include="icon.cpp" />
-    <ClCompile Include="info_tab_dialog.cpp" />
-    <ClCompile Include="input_agent.cpp" />
-    <ClCompile Include="jumplist.cpp" />
-    <ClCompile Include="list_view.cpp" />
-    <ClCompile Include="logger.cpp" />
-    <ClCompile Include="midi_device_manager.cpp" />
-    <ClCompile Include="midi_input.cpp" />
-    <ClCompile Include="midi_output.cpp" />
-    <ClCompile Include="mixer_agent.cpp" />
-    <ClCompile Include="output_agent.cpp" />
-    <ClCompile Include="player.cpp" />
-    <ClCompile Include="reader_agent.cpp" />
-    <ClCompile Include="renderer.cpp" />
-    <ClCompile Include="ring_buffer.cpp" />
-    <ClCompile Include="sequencer.cpp" />
-    <ClCompile Include="seq_tab_dialog.cpp" />
-    <ClCompile Include="sfmf.cpp" />
-    <ClCompile Include="sf_base_win32_window.cpp" />
-    <ClCompile Include="sf_base_win32_window2.cpp" />
-    <ClCompile Include="sf_com.cpp" />
-    <ClCompile Include="sf_windows_base.cpp">
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">All</AssemblerOutput>
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">All</AssemblerOutput>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    <ClCompile Include="csocean\csocean_renderer.cpp" />
+    <ClCompile Include="csocean\fft_512x512_c2c.cpp" />
+    <ClCompile Include="csocean\ocean_simulator.cpp" />
+    <ClCompile Include="csocean\skybox11.cpp" />
+    <ClCompile Include="source\agent_base.cpp" />
+    <ClCompile Include="source\application.cpp" />
+    <ClCompile Include="source\app_base_directory.cpp" />
+    <ClCompile Include="source\async_reader.cpp" />
+    <ClCompile Include="source\base_window.cpp" />
+    <ClCompile Include="source\code_converter.cpp" />
+    <ClCompile Include="source\control_base.cpp" />
+    <ClCompile Include="source\dcomposition_window.cpp" />
+    <ClCompile Include="source\dpi.cpp" />
+    <ClCompile Include="source\exception.cpp" />
+    <ClCompile Include="source\fft4g.cpp" />
+    <ClCompile Include="source\fft_renderer.cpp" />
+    <ClCompile Include="source\fft_renderer2.cpp" />
+    <ClCompile Include="source\fluidcs11_renderer.cpp" />
+    <ClCompile Include="source\fluidcs11_window.cpp" />
+    <ClCompile Include="source\graphics.cpp" />
+    <ClCompile Include="source\icon.cpp" />
+    <ClCompile Include="source\input_agent.cpp" />
+    <ClCompile Include="source\jumplist.cpp" />
+    <ClCompile Include="source\logger.cpp" />
+    <ClCompile Include="source\midi_device_manager.cpp" />
+    <ClCompile Include="source\midi_input.cpp" />
+    <ClCompile Include="source\midi_output.cpp" />
+    <ClCompile Include="source\mixer_agent.cpp" />
+    <ClCompile Include="source\output_agent.cpp" />
+    <ClCompile Include="source\player.cpp" />
+    <ClCompile Include="source\reader_agent.cpp" />
+    <ClCompile Include="source\renderer.cpp" />
+    <ClCompile Include="source\ring_buffer.cpp" />
+    <ClCompile Include="source\sequencer.cpp" />
+    <ClCompile Include="source\sfmf.cpp" />
+    <ClCompile Include="source\sf_base_win32_window.cpp" />
+    <ClCompile Include="source\sf_base_win32_window2.cpp" />
+    <ClCompile Include="source\sf_com.cpp" />
+    <ClCompile Include="source\sf_windows_base.cpp" />
+    <ClCompile Include="source\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="tab_dialog.cpp" />
-    <ClCompile Include="taskbar.cpp" />
-    <ClCompile Include="test_renderer.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="toplevel_window.cpp" />
-    <ClCompile Include="ui_renderer.cpp" />
-    <ClCompile Include="video_renderer.cpp" />
-    <ClCompile Include="wasapi_base.cpp" />
-    <ClCompile Include="wasapi_manager.cpp" />
-    <ClCompile Include="wavelet_renderer.cpp" />
-    <ClCompile Include="winmain.cpp" />
+    <ClCompile Include="source\taskbar.cpp" />
+    <ClCompile Include="source\test_renderer.cpp" />
+    <ClCompile Include="source\timer.cpp" />
+    <ClCompile Include="source\video_renderer.cpp" />
+    <ClCompile Include="source\wasapi_base.cpp" />
+    <ClCompile Include="source\wasapi_manager.cpp" />
+    <ClCompile Include="source\wavelet_renderer.cpp" />
+    <ClCompile Include="source\winmain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="agent_base.h" />
-    <ClInclude Include="application.h" />
-    <ClInclude Include="async_reader.h" />
-    <ClInclude Include="audio_base.h" />
-    <ClInclude Include="audio_filter.h" />
-    <ClInclude Include="audio_processor.h" />
-    <ClInclude Include="audio_source.h" />
-    <ClInclude Include="base_window.h" />
-    <ClInclude Include="code_converter.h" />
-    <ClInclude Include="config_tab_dialog.h" />
-    <ClInclude Include="control_base.h" />
-    <ClInclude Include="dcomposition_window.h" />
-    <ClInclude Include="debugout.h" />
-    <ClInclude Include="dpi.h" />
-    <ClInclude Include="exception.h" />
-    <ClInclude Include="fft4g.h" />
-    <ClInclude Include="fft_renderer.h" />
-    <ClInclude Include="fft_renderer2.h" />
-    <ClInclude Include="fluidcs11_renderer.h" />
-    <ClInclude Include="fluidcs11_window.h" />
-    <ClInclude Include="graphics.h" />
-    <ClInclude Include="icon.h" />
-    <ClInclude Include="info_tab_dialog.h" />
-    <ClInclude Include="input_agent.h" />
-    <ClInclude Include="jumplist.h" />
-    <ClInclude Include="list_view.h" />
-    <ClInclude Include="logger.h" />
-    <ClInclude Include="message_loop.h" />
-    <ClInclude Include="midi_base.h" />
-    <ClInclude Include="midi_device_manager.h" />
-    <ClInclude Include="midi_input.h" />
-    <ClInclude Include="midi_message.h" />
-    <ClInclude Include="midi_output.h" />
-    <ClInclude Include="mixer_agent.h" />
-    <ClInclude Include="output_agent.h" />
-    <ClInclude Include="player.h" />
-    <ClInclude Include="reader_agent.h" />
-    <ClInclude Include="renderer.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="ring_buffer.h" />
-    <ClInclude Include="sequencer.h" />
-    <ClInclude Include="seq_message.h" />
-    <ClInclude Include="seq_tab_dialog.h" />
-    <ClInclude Include="sfhelper.h" />
-    <ClInclude Include="sfmf.h" />
-    <ClInclude Include="sf_base_win32_window.h" />
-    <ClInclude Include="sf_base_win32_window2.h" />
-    <ClInclude Include="sf_com.h" />
-    <ClInclude Include="sf_memory.h" />
-    <ClInclude Include="sf_windows.h" />
-    <ClInclude Include="sf_windows_base.h" />
-    <ClInclude Include="singleton.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="tab_dialog.h" />
-    <ClInclude Include="taskbar.h" />
-    <ClInclude Include="test_renderer.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="toplevel_window.h" />
-    <ClInclude Include="ui_renderer.h" />
-    <ClInclude Include="video_renderer.h" />
-    <ClInclude Include="wasapi.h" />
-    <ClInclude Include="wavelet_renderer.h" />
+    <ClInclude Include="csocean\csocean_renderer.h" />
+    <ClInclude Include="csocean\fft_512x512.h" />
+    <ClInclude Include="csocean\ocean_simulator.h" />
+    <ClInclude Include="csocean\skybox11.h" />
+    <ClInclude Include="include\agent_base.h" />
+    <ClInclude Include="include\application.h" />
+    <ClInclude Include="include\app_base_directory.h" />
+    <ClInclude Include="include\async_reader.h" />
+    <ClInclude Include="include\audio_base.h" />
+    <ClInclude Include="include\audio_filter.h" />
+    <ClInclude Include="include\audio_processor.h" />
+    <ClInclude Include="include\audio_source.h" />
+    <ClInclude Include="include\base_window.h" />
+    <ClInclude Include="include\code_converter.h" />
+    <ClInclude Include="include\control_base.h" />
+    <ClInclude Include="include\dcomposition_window.h" />
+    <ClInclude Include="include\debugout.h" />
+    <ClInclude Include="include\dpi.h" />
+    <ClInclude Include="include\exception.h" />
+    <ClInclude Include="include\fft4g.h" />
+    <ClInclude Include="include\fft_renderer.h" />
+    <ClInclude Include="include\fft_renderer2.h" />
+    <ClInclude Include="include\fluidcs11_renderer.h" />
+    <ClInclude Include="include\fluidcs11_window.h" />
+    <ClInclude Include="include\graphics.h" />
+    <ClInclude Include="include\icon.h" />
+    <ClInclude Include="include\input_agent.h" />
+    <ClInclude Include="include\jumplist.h" />
+    <ClInclude Include="include\logger.h" />
+    <ClInclude Include="include\media_foundation.h" />
+    <ClInclude Include="include\message_loop.h" />
+    <ClInclude Include="include\midi_base.h" />
+    <ClInclude Include="include\midi_device_manager.h" />
+    <ClInclude Include="include\midi_input.h" />
+    <ClInclude Include="include\midi_message.h" />
+    <ClInclude Include="include\midi_output.h" />
+    <ClInclude Include="include\midi_test.h" />
+    <ClInclude Include="include\mixer_agent.h" />
+    <ClInclude Include="include\output_agent.h" />
+    <ClInclude Include="include\player.h" />
+    <ClInclude Include="include\reader_agent.h" />
+    <ClInclude Include="include\renderer.h" />
+    <ClInclude Include="include\resource.h" />
+    <ClInclude Include="include\ring_buffer.h" />
+    <ClInclude Include="include\sample_rate_converter.h" />
+    <ClInclude Include="include\sequencer.h" />
+    <ClInclude Include="include\seq_message.h" />
+    <ClInclude Include="include\sfhelper.h" />
+    <ClInclude Include="include\sfmf.h" />
+    <ClInclude Include="include\sf_base_win32_window.h" />
+    <ClInclude Include="include\sf_base_win32_window2.h" />
+    <ClInclude Include="include\sf_com.h" />
+    <ClInclude Include="include\sf_memory.h" />
+    <ClInclude Include="include\sf_windows.h" />
+    <ClInclude Include="include\sf_windows_base.h" />
+    <ClInclude Include="include\singleton.h" />
+    <ClInclude Include="include\stdafx.h" />
+    <ClInclude Include="include\targetver.h" />
+    <ClInclude Include="include\taskbar.h" />
+    <ClInclude Include="include\test_renderer.h" />
+    <ClInclude Include="include\timer.h" />
+    <ClInclude Include="include\video_renderer.h" />
+    <ClInclude Include="include\wasapi.h" />
+    <ClInclude Include="include\wavelet_renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\..\..\libs\DirectXTK\DirectXTK_Desktop_2013.sln" />
-    <None Include="VideoShader.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="wasapi2.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="VideoPixelShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="VideoVertexShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
+    <ResourceCompile Include="source\wasapi2.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
