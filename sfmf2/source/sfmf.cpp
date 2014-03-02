@@ -435,7 +435,7 @@ video_writer::video_writer(
   {
     const unsigned int WIDTH = width_;
     const unsigned int HEIGHT = height_;
-    const unsigned int BITRATE = 12000000;
+    const unsigned int BITRATE = 9000000;
     const unsigned int ASPECT_NUM = 1;
     const unsigned int ASPECT_DENOM = 1;
     const unsigned long  BPP_IN = 32;

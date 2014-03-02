@@ -59,7 +59,7 @@ namespace sf{
     // Shading properties:
     // Two colors for waterbody and sky color
     DirectX::SimpleMath::Vector3 g_SkyColor = DirectX::SimpleMath::Vector3(0.38f, 0.45f, 0.56f);
-    DirectX::SimpleMath::Vector3 g_WaterbodyColor = DirectX::SimpleMath::Vector3(0.07f, 0.15f, 0.2f);
+    DirectX::SimpleMath::Vector3 g_WaterbodyColor = DirectX::SimpleMath::Vector3(0.07f, 0.29f, 0.25f);
     // Blending term for sky cubemap
     float g_SkyBlending = 16.0f;
 
@@ -209,9 +209,9 @@ namespace sf{
     int buildNodeList(QuadNode& quad_node);
     void CreateOceanSimAndRender();
 
-    DirectX::SimpleMath::Vector4 eye_ = DirectX::XMVectorSet(0.0f, 3.0f, -6.0f, 0.0f);
-    DirectX::SimpleMath::Vector4 at_ = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
-    DirectX::SimpleMath::Vector4 up_ = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    DirectX::SimpleMath::Vector3 eye_;
+    DirectX::SimpleMath::Vector3 at_;
+    DirectX::SimpleMath::Vector3 up_;
     DirectX::SimpleMath::Matrix mat_world_;
     DirectX::SimpleMath::Matrix mat_view_;
     DirectX::SimpleMath::Matrix mat_projection_;

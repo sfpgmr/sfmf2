@@ -22,7 +22,7 @@ public:
     ID3D11Texture2DPtr& pCubeTexture, ID3D11ShaderResourceViewPtr& pCubeRV,float width,float height);
 
     void    OnD3D11ResizedSwapChain( const DXGI_SURFACE_DESC* pBackBufferSurfaceDesc );
-    void    D3D11Render( DirectX::SimpleMath::Matrix& pmWorldViewProj, ID3D11DeviceContext2Ptr& pd3dImmediateContext );
+    void    D3D11Render(DirectX::XMMATRIX& pmWorldViewProj, ID3D11DeviceContext2Ptr& pd3dImmediateContext);
     void    OnD3D11ReleasingSwapChain();
     void    OnD3D11DestroyDevice();
 

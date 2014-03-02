@@ -37,9 +37,10 @@ csocean_renderer_base::csocean_renderer_base(video_renderer_resources& res, csoc
 
 
   // Setup the camera's view parameters
-  eye_ = Vector4(1562.24f, 854.291f, -1224.99f,0.0f);
-  at_ = Vector4(1562.91f, 854.113f, -1225.71f,0.0f);
-  up_ = Vector4(0.0f, 1.0f, 0.0f, 0.0f);
+  eye_ = Vector3(1562.24f, 854.291f, -1224.99f);
+  at_ = Vector3(1562.91f, 854.113f, -1225.71f);
+//  at_ = Vector3(1600.0f, 854.291f, -1224.99f);
+  up_ = Vector3(0.0f, 1.0f, 0.0f);
 
   init_view_matrix();
 
@@ -50,8 +51,8 @@ csocean_renderer_base::csocean_renderer_base(video_renderer_resources& res, csoc
 
   // Sky box
   std::wstring tex_path(app_base_directory::instance()->resource_dir() + L"sky_cube.dds");
-  CreateDDSTextureFromFile(d3d_device.Get(), tex_path.c_str(), nullptr, g_pSRV_SkyCube.GetAddressOf());
-  g_pSRV_SkyCube->GetResource((ID3D11Resource**) g_pSkyCubeMap.GetAddressOf());
+  CreateDDSTextureFromFile(d3d_device.Get(), tex_path.c_str(), (ID3D11Resource**) g_pSkyCubeMap.GetAddressOf(), g_pSRV_SkyCube.GetAddressOf());
+//  g_pSRV_SkyCube->GetResource((ID3D11Resource**) g_pSkyCubeMap.GetAddressOf());
 
   g_Skybox.reset(new CSkybox11(d3d_device, d3d_context, 50.0f, g_pSkyCubeMap, g_pSRV_SkyCube, res_.width, res_.height));
 
@@ -200,6 +201,7 @@ void csocean_renderer_base::init_view_matrix()
   mat_world_ = XMMatrixIdentity();
 
 	// ビュー行列のセットアップ
+//  at_ = Vector4(1562.91f, 854.113f, -1225.71f, 0.0f);
 	mat_view_ = XMMatrixLookAtLH(eye_, at_, up_);
  // //	cb_never_changes cnc;
 	//cnc.mView = XMMatrixTra//nspose(mat_view_);
@@ -209,7 +211,7 @@ void csocean_renderer_base::init_view_matrix()
 	//d3d_context->UpdateSubresource(cb_never_changes_.Get(), 0, NULL, &cnc, 0, 0);
 
 	// 投影行列のセットアップ
-	mat_projection_ = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) res_.width / (float) res_.height, 0.01f, 20000.0f);
+	mat_projection_ = XMMatrixPerspectiveFovLH(XM_PIDIV4, (float) res_.width / (float) res_.height, 100.f, 200000.0f);
 	//cb_change_on_resize ccor;
 	//ccor.mProjection = XMMatrixTranspose(mat_projection_);
 	//// 定数バッファに格納
@@ -224,14 +226,50 @@ void csocean_renderer_base::render(LONGLONG t, int samplepos, audio_samples_t& a
   // OMステージに登録する
   d3d_context->OMSetRenderTargets(1, res_.render_target_view.GetAddressOf(), res_.depth_view.Get());
 
-  float color[4] = { 0.1f, 0.2f, 0.4f, 0.0f };
+  float color[4] = { 0.1f, 0.2f, 1.0f, 1.0f };
   d3d_context->ClearRenderTargetView(res_.render_target_view.Get(), color);
   d3d_context->ClearDepthStencilView(res_.depth_view.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+  static float rot = 0.0f;
+  rot = rot + 0.0025f;
+  if (rot > XM_2PI){
+    rot -= XM_2PI;
+  }
+
+  Matrix camera_rot(Matrix::CreateFromYawPitchRoll(rot, 0.0f, 0.0f));
+  // Transform vectors based on camera's rotation matrix
+  Vector3 vWorldUp, vWorldAhead;
+  Vector3 vLocalUp = Vector3(0, 1, 0);
+  Vector3 vLocalAhead = Vector3(0, 0, 1);
+  vWorldUp = Vector3::Transform(vLocalUp, camera_rot);
+  vWorldAhead = Vector3::Transform(vLocalAhead,camera_rot);
+
+  //Vector3 vPosDeltaWorld(Vector3::Transform(vPosDelta,camera_rot));
+
+  // Move the eye position 
+  //m_vEye += vPosDeltaWorld;
+  //if (m_bClipToBoundary)
+  //  ConstrainToBoundary(&m_vEye);
+
+  // Update the lookAt position based on the eye position 
+  //m_vLookAt = m_vEye + vWorldAhead;
+
+  //// Update the view matrix
+  //D3DXMatrixLookAtLH(&m_mView, &m_vEye, &m_vLookAt, &vWorldUp);
+
+  mat_view_ = Matrix::CreateLookAt(eye_, eye_ + vWorldAhead, vWorldUp);
+ // mat_view_._41 += 0.01f;
 
   // Sky box rendering
+  //XMMATRIX a;
   Matrix mView = Matrix(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1) * mat_view_;
-  Matrix mProj = mat_projection_;
-  Matrix mWorldViewProjection = mView * mProj;
+  XMMATRIX mWorldViewProjection = mView * mat_projection_;
+
+  //DOUT2(L" ---- \n");
+  //DOUT2(boost::wformat(L"%f %f %f %f \n") % mWorldViewProjection._11 % mWorldViewProjection._12 % mWorldViewProjection._13 % mWorldViewProjection._14);
+  //DOUT2(boost::wformat(L"%f %f %f %f \n") % mWorldViewProjection._21 % mWorldViewProjection._22 % mWorldViewProjection._23 % mWorldViewProjection._24);
+  //DOUT2(boost::wformat(L"%f %f %f %f \n") % mWorldViewProjection._31 % mWorldViewProjection._32 % mWorldViewProjection._33 % mWorldViewProjection._34);
+  //DOUT2(boost::wformat(L"%f %f %f %f \n") % mWorldViewProjection._41 % mWorldViewProjection._42 % mWorldViewProjection._43 % mWorldViewProjection._44);
+  //DOUT2(L" ---- \n");
 
   if (!g_RenderWireframe)
     g_Skybox->D3D11Render(mWorldViewProjection, d3d_context);
@@ -322,41 +360,41 @@ void csocean_renderer_base::render(LONGLONG t, int samplepos, audio_samples_t& a
 
   // 波形データを表示する
 
-//  {
-//    /*******/
-//    const double delta = (144.0 - 36.0) / res_.width;
-//    const float delta2 = res_.width / (144.0 - 36.0);
-//    const int li = length_ / 2;
-//
-//    int pos = 0,pos_bkp = 0;
-//    double note = 36;
-//    double min_db = -40.0;
-//    const double  step = 44100. / (double(length_) / 2.);
-//    for (float i = 0; i < res_.width; ++i){
-//      pos =  (int)(pow(2, (note - 69.0) / 12.) * 440. / step);
-//      if (pos >= length_ / 2) break;
-//
-//      double l = (((log_[pos] - 20.0) < min_db) ? min_db : (log_[pos] - 20.0));
-//      double r = (((log_1_[pos] - 20.0)  < min_db) ? min_db : (log_1_[pos] - 20.0));
-//
-//      float left_top = (-l) * 5  + 150.0;
-//      float right_top = (-r) * 5 + 500.0;
-//
-////      white_brush_->SetColor(hsv2rgb(270.0 + l * 140. / -min_db, 0.99, 0.99, (0.99 + l / -min_db)*0.5));
-//      white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, (0.99 + l / -min_db)*0.7));
-//      context->FillRectangle(D2D1::RectF(i, left_top, i + 1, 350.0f),/*::Point2F(i, 250.0f), D2D1::Point2F(i, left), */ white_brush_.Get());
-//      white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, (0.99 + r / -min_db)*0.7));
-////      white_brush_->SetColor(hsv2rgb(270.0 + r * 140. / -min_db, 0.99, 0.99, (0.99 + r / -min_db)*0.5));
-//      context->FillRectangle(D2D1::RectF(i, right_top, i + 1, 700.0f),/*::Point2F(i, 250.0f), D2D1::Point2F(i, left), */ white_brush_.Get());
-//      //      context->DrawLine(D2D1::Point2F(i, 550.0f), D2D1::Point2F(i, right), white_brush_.Get());
-//      note += delta;
-//    }
-  //  //white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.5f));
-  //  //for (float i = 0; i < res_.width; i+= delta2)
-  //  //{
-  //  //  context->DrawLine(D2D1::Point2F(i, 0.0f), D2D1::Point2F(i, res_.height), white_brush_.Get());
-  //  //}
-  //}
+  {
+    /*******/
+    const double delta = (144.0 - 36.0) / res_.width;
+    const float delta2 = res_.width / (144.0 - 36.0);
+    const int li = length_ / 2;
+
+    int pos = 0,pos_bkp = 0;
+    double note = 36;
+    double min_db = -40.0;
+    const double  step = 44100. / (double(length_) / 2.);
+    for (float i = 0; i < res_.width; ++i){
+      pos =  (int)(pow(2, (note - 69.0) / 12.) * 440. / step);
+      if (pos >= length_ / 2) break;
+
+      double l = (((log_[pos] - 20.0) < min_db) ? min_db : (log_[pos] - 20.0));
+      double r = (((log_1_[pos] - 20.0)  < min_db) ? min_db : (log_1_[pos] - 20.0));
+
+      float left_top = (-l) * 5  + 150.0;
+      float right_top = (-r) * 5 + 500.0;
+
+//      white_brush_->SetColor(hsv2rgb(270.0 + l * 140. / -min_db, 0.99, 0.99, (0.99 + l / -min_db)*0.5));
+      white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, (0.99 + l / -min_db)*0.7));
+      context->FillRectangle(D2D1::RectF(i, left_top, i + 1, 350.0f),/*::Point2F(i, 250.0f), D2D1::Point2F(i, left), */ white_brush_.Get());
+      white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, (0.99 + r / -min_db)*0.7));
+//      white_brush_->SetColor(hsv2rgb(270.0 + r * 140. / -min_db, 0.99, 0.99, (0.99 + r / -min_db)*0.5));
+      context->FillRectangle(D2D1::RectF(i, right_top, i + 1, 700.0f),/*::Point2F(i, 250.0f), D2D1::Point2F(i, left), */ white_brush_.Get());
+      //      context->DrawLine(D2D1::Point2F(i, 550.0f), D2D1::Point2F(i, right), white_brush_.Get());
+      note += delta;
+    }
+    //white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.5f));
+    //for (float i = 0; i < res_.width; i+= delta2)
+    //{
+    //  context->DrawLine(D2D1::Point2F(i, 0.0f), D2D1::Point2F(i, res_.height), white_brush_.Get());
+    //}
+  }
 
  
   white_brush_->SetColor(D2D1::ColorF(1.0f, 1.0f, 1.0f, 0.5f));
@@ -410,9 +448,9 @@ void csocean_renderer_base::initRenderResource(const OceanParameter& ocean_param
     std::wstring shader_path(app_base_directory::instance()->shader_dir() + L"ocean_shading.hlsl");
     ID3DBlobPtr pBlobOceanSurfVS;
 
-    sf::create_shader_blob_from_file(shader_path, "OceanSurfVS", "vs_4_0", pBlobOceanSurfVS);
-    sf::create_shader_from_file(d3d_device,shader_path, "OceanSurfPS", "ps_4_0", g_pOceanSurfPS);
-    sf::create_shader_from_file(d3d_device,shader_path, "WireframePS", "ps_4_0", g_pWireframePS);
+    sf::create_shader_blob_from_file(shader_path, "OceanSurfVS", "vs_5_0", pBlobOceanSurfVS);
+    sf::create_shader_from_file(d3d_device,shader_path, "OceanSurfPS", "ps_5_0", g_pOceanSurfPS);
+    sf::create_shader_from_file(d3d_device,shader_path, "WireframePS", "ps_5_0", g_pWireframePS);
 
     sf::create_shader(d3d_device, pBlobOceanSurfVS->GetBufferPointer(), pBlobOceanSurfVS->GetBufferSize(), NULL, g_pOceanSurfVS);
 
@@ -1249,11 +1287,16 @@ int csocean_renderer_base::buildNodeList(QuadNode& quad_node)
 void csocean_renderer_base::renderShaded(ID3D11ShaderResourceViewPtr& displacemnet_map, ID3D11ShaderResourceViewPtr& gradient_map,float time)
 {
   auto d3d_context(res_.d3d_context);
+//  at_ = at_ + Vector4(0.01f, 0.f, 0.f, 0.f);
+//  mat_view_ = XMMatrixLookAtLH(eye_, at_, up_);
+
   // Build rendering list
   g_render_list.clear();
   float ocean_extent = g_PatchLength * (1 << g_FurthestCover);
   QuadNode root_node = { Vector2(-ocean_extent * 0.5f, -ocean_extent * 0.5f), ocean_extent, 0, { -1, -1, -1, -1 } };
   buildNodeList(root_node);
+
+
 
   // Matrices
   Matrix matView = Matrix(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1) * mat_view_;

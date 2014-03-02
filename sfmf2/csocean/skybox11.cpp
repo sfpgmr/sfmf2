@@ -59,7 +59,7 @@ CSkybox11::CSkybox11(ID3D11Device2Ptr& pd3dDevice, ID3D11DeviceContext2Ptr& cont
     CHK( pd3dDevice->CheckFormatSupport( DXGI_FORMAT_R32G32B32A32_FLOAT, &FormatSupport ) );
 
     // Setup linear or point sampler according to the format Query result
-    D3D11_SAMPLER_DESC SamDesc;
+    D3D11_SAMPLER_DESC SamDesc = {};
     SamDesc.Filter = ( FormatSupport & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE ) > 0 ? D3D11_FILTER_MIN_MAG_MIP_LINEAR : D3D11_FILTER_MIN_MAG_MIP_POINT;
     SamDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
     SamDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -140,7 +140,7 @@ void CSkybox11::OnD3D11ResizedSwapChain(const DXGI_SURFACE_DESC* pBackBufferSurf
 }
  
 
-void CSkybox11::D3D11Render( Matrix& pmWorldViewProj, ID3D11DeviceContext2Ptr& pd3dImmediateContext )
+void CSkybox11::D3D11Render( XMMATRIX& pmWorldViewProj, ID3D11DeviceContext2Ptr& pd3dImmediateContext )
 {
     pd3dImmediateContext->IASetInputLayout( m_pVertexLayout11.Get() );
 
@@ -157,7 +157,7 @@ void CSkybox11::D3D11Render( Matrix& pmWorldViewProj, ID3D11DeviceContext2Ptr& p
     D3D11_MAPPED_SUBRESOURCE MappedResource;
     CHK( pd3dImmediateContext->Map( m_pcbVSPerObject.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource ) );
     CB_VS_PER_OBJECT* pVSPerObject = ( CB_VS_PER_OBJECT* )MappedResource.pData;  
-    pVSPerObject->m_WorldViewProj = pmWorldViewProj.Invert();
+    pVSPerObject->m_WorldViewProj = XMMatrixInverse(nullptr,pmWorldViewProj);
     pd3dImmediateContext->Unmap( m_pcbVSPerObject.Get(), 0 );
     pd3dImmediateContext->VSSetConstantBuffers( 0, 1, m_pcbVSPerObject.GetAddressOf() );
 

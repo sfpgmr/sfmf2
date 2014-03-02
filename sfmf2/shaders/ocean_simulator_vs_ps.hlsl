@@ -87,11 +87,12 @@ float4 GenGradientFoldingPS(VS_QUAD_OUTPUT In) : SV_Target
 	float2 tc_back  = float2(In.TexCoord.x, In.TexCoord.y - one_texel.y);
 	float2 tc_front = float2(In.TexCoord.x, In.TexCoord.y + one_texel.y);
 
-	float3 displace_left  = g_samplerDisplacementMap.Sample(LinearSampler, tc_left).xyz;
-	float3 displace_right = g_samplerDisplacementMap.Sample(LinearSampler, tc_right).xyz;
-	float3 displace_back  = g_samplerDisplacementMap.Sample(LinearSampler, tc_back).xyz;
-	float3 displace_front = g_samplerDisplacementMap.Sample(LinearSampler, tc_front).xyz;
-	
+
+  float3 displace_left = g_samplerDisplacementMap.Sample(LinearSampler, tc_left).xyz;
+  float3 displace_right = g_samplerDisplacementMap.Sample(LinearSampler, tc_right).xyz;
+  float3 displace_back = g_samplerDisplacementMap.Sample(LinearSampler, tc_back).xyz;
+  float3 displace_front = g_samplerDisplacementMap.Sample(LinearSampler, tc_front).xyz;
+
 	// Do not store the actual normal value. Using gradient instead, which preserves two differential values.
 	float2 gradient = {-(displace_right.z - displace_left.z), -(displace_front.z - displace_back.z)};
 	
