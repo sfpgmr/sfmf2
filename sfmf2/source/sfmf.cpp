@@ -291,393 +291,479 @@ namespace sf {
 
 
 
-  //Windows::Foundation::IAsyncActionWithProgress<double>^ sf::WriteAsync(Windows::Storage::Streams::IRandomAccessStream^ stream)
-  //{
-  //  return create_async([stream]
-  //    (progress_reporter<double> reporter, cancellation_token token) {
-
-  //    // some parameters   
-
-  //    //auto_mf mf;
-
-  //    //
-  //    // Sink Writer の作成
-  //    //
-
-  //    ComPtr<IMFByteStream> spByteStream;
-  //    CHK(MFCreateMFByteStreamOnStreamEx((IUnknown*) stream, &spByteStream));
-
-  //    ComPtr<IMFAttributes> spAttr;
-  //    CHK(MFCreateAttributes(&spAttr, 10));
-  //    CHK(spAttr->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
-
-  //    ComPtr<IMFSinkWriter> spSinkWriter;
-  //    CHK(MFCreateSinkWriterFromURL(L".mp4", spByteStream.Get(), spAttr.Get(), &spSinkWriter));
-
-  //    //   
-  //    // 出力メディアタイプのセットアップ   
-  //    //   
-
-  //    ComPtr<IMFMediaType> spTypeOut;
-  //    CHK(MFCreateMediaType(&spTypeOut));
-  //    CHK(spTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-  //    CHK(spTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
-  //    CHK(spTypeOut->SetUINT32(MF_MT_AVG_BITRATE, BITRATE));
-  //    CHK(spTypeOut->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
-  //    CHK(MFSetAttributeSize(spTypeOut.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
-  //    CHK(MFSetAttributeRatio(spTypeOut.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
-  //    CHK(MFSetAttributeRatio(spTypeOut.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
-
-  //    DWORD streamIndex;
-  //    CHK(spSinkWriter->AddStream(spTypeOut.Get(), &streamIndex));
-
-  //    //   
-  //    // 入力メディアタイプのセットアップ  
-  //    //   
-
-  //    ComPtr<IMFMediaType> spTypeIn;
-  //    CHK(MFCreateMediaType(&spTypeIn));
-  //    CHK(spTypeIn->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-  //    CHK(spTypeIn->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));
-  //    CHK(spTypeIn->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
-  //    CHK(MFSetAttributeSize(spTypeIn.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
-  //    CHK(MFSetAttributeRatio(spTypeIn.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
-  //    CHK(MFSetAttributeRatio(spTypeIn.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
-
-  //    CHK(spSinkWriter->SetInputMediaType(streamIndex, spTypeIn.Get(), nullptr));
-
-  //    //   
-  //    //    
-  //    //   
-
-  //    CHK(spSinkWriter->BeginWriting());
-
-  //    double progress = 0.;
-  //    LONGLONG hnsSampleTime = 0;
-  //    for (unsigned int nFrame = 0; nFrame < FRAME_NUM; nFrame++)
-  //    {
-  //      if (token.is_canceled())
-  //      {
-  //        break;
-  //      }
-
-  //      double newProgress = 100. * (double) nFrame / (double) FRAME_NUM;
-  //      if (newProgress - progress >= 1.)
-  //      {
-  //        progress = newProgress;
-  //        reporter.report(progress);
-  //      }
-
-  //      //   
-  //      // Create a media sample   
-  //      //   
-
-  //      ComPtr<IMFSample> spSample;
-  //      CHK(MFCreateSample(&spSample));
-  //      CHK(spSample->SetSampleDuration(hnsSampleDuration));
-  //      CHK(spSample->SetSampleTime(hnsSampleTime));
-  //      hnsSampleTime += hnsSampleDuration;
-
-  //      //   
-  //      // Add a media buffer filled with random data   
-  //      //   
-
-  //      ComPtr<IMFMediaBuffer> spBuffer;
-  //      CHK(MFCreateMemoryBuffer(cbMaxLength, &spBuffer));
-  //      CHK(spBuffer->SetCurrentLength(cbMaxLength));
-  //      CHK(spSample->AddBuffer(spBuffer.Get()));
-
-  //      // Draw a bouncing white rectangle over black background
-  //      unsigned char *pbBuffer = nullptr;
-  //      CHK(spBuffer->Lock(&pbBuffer, nullptr, nullptr));
-  //      for (unsigned int i = 0; i < HEIGHT; i++)
-  //      {
-  //        for (unsigned int j = 0; j < WIDTH; j++)
-  //        {
-  //          unsigned int pos = 4 * (i * WIDTH + j);
-  //          unsigned char val = 255 * (
-  //            (abs((int) WIDTH / 2 - (int) j) < (WIDTH / 4)) &&
-  //            (abs(HEIGHT * (.5 + .1 * sin(2. * M_PI * (double) nFrame / (double) ONE_SECOND)) - (int) i) < (HEIGHT / 4))
-  //            );
-  //          pbBuffer[pos] = val;
-  //          pbBuffer[pos + 1] = val;
-  //          pbBuffer[pos + 2] = val;
-  //          pbBuffer[pos + 3] = val;
-  //        }
-  //      }
-  //      CHK(spBuffer->Unlock());
-
-  //      //   
-  //      // Write the media sample   
-  //      //   
-
-  //      CHK(spSinkWriter->WriteSample(streamIndex, spSample.Get()));
-  //    }
-
-  //    if (!token.is_canceled())
-  //    {
-  //      CHK(spSinkWriter->Finalize());
-
-  //      reporter.report(100.);
-  //    }
-  //  });
-  //}
-
-
-  //---------------------------------------------------------------------
-const unsigned int RATE_NUM = 30000;
-const unsigned int RATE_DENOM = 1000;
-const long long hnsSampleDuration = 10000000 * (long long) RATE_DENOM / (long long) RATE_NUM;
-
-video_writer::video_writer(
-    std::wstring& target_path,IMFMediaTypePtr& audio_media_type
-    , unsigned int width, unsigned int height) : target_path_(target_path), audio_media_type_(audio_media_type), width_(width), height_(height)
-  {
-    const unsigned int WIDTH = width_;
-    const unsigned int HEIGHT = height_;
-    const unsigned int BITRATE = 9000000;
-    const unsigned int ASPECT_NUM = 1;
-    const unsigned int ASPECT_DENOM = 1;
-    const unsigned long  BPP_IN = 32;
-    const unsigned long cbMaxLength = WIDTH * HEIGHT * BPP_IN / 8;
-    const unsigned int ONE_SECOND = RATE_NUM / RATE_DENOM;
-    const unsigned int FRAME_NUM = 10 * ONE_SECOND;
-
-    samples_per_second = 44100;
-    average_bytes_per_second = 24000;
-    channel_count = 2;
-    bits_per_sample = 16;
-
-    // 入力ストリームから SinkWriterを生成する
-
-    CHK(MFCreateFile(MF_FILE_ACCESSMODE::MF_ACCESSMODE_WRITE,MF_FILE_OPENMODE::MF_OPENMODE_DELETE_IF_EXIST,MF_FILE_FLAGS::MF_FILEFLAGS_NONE,target_path.c_str(),&byte_stream_));
-
-    CHK(MFCreateAttributes(&attr_, 10));
-    CHK(attr_->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
-    CHK(attr_->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, true));
-
-
-    
-
-    IMFSinkWriterPtr sinkWriter;
-
-    CHK(MFCreateSinkWriterFromURL(L".mp4", byte_stream_.Get(), attr_.Get(), &sinkWriter));
-    CHK(sinkWriter.As(&sink_writer_));
-
-    //   
-    // 出力メディアタイプのセットアップ   
-    //   
-
-    // ビデオ
-
-    CHK(MFCreateMediaType(&media_type_out_));
-    CHK(media_type_out_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-    CHK(media_type_out_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
-    CHK(media_type_out_->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_Main));
-    //CHK(media_type_out_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));   
-    CHK(media_type_out_->SetUINT32(MF_MT_AVG_BITRATE, BITRATE));
-    CHK(media_type_out_->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
-    CHK(MFSetAttributeSize(media_type_out_.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
-    CHK(MFSetAttributeRatio(media_type_out_.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
-    CHK(MFSetAttributeRatio(media_type_out_.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
-
-    CHK(sink_writer_->AddStream(media_type_out_.Get(), &stream_index_));
-    IMFTransformPtr mft;
-    //IMFRateSupportPtr ptr;
-
-    //CHK(sink_writer_->GetServiceForStream(stream_index_, MF_RATE_CONTROL_SERVICE, __uuidof(IMFRateSupport), &ptr));
-
-    // オーディオ
-
-    CHK(MFCreateMediaType(&media_type_out_audio_));
-    CHK(media_type_out_audio_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
-    CHK(media_type_out_audio_->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC));
-    CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, samples_per_second));
-    CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, bits_per_sample));
-    CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channel_count));
-    CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, average_bytes_per_second));
-    CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 1));
-    CHK(sink_writer_->AddStream(media_type_out_audio_.Get(), &stream_index_audio_));
-
-    //   
-    // 入力メディアタイプのセットアップ  
-    //   
-
-    // ビデオ
-
-    CHK(MFCreateMediaType(&media_type_in_));
-    CHK(media_type_in_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-    CHK(media_type_in_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));
-    CHK(media_type_in_->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
-    CHK(MFSetAttributeSize(media_type_in_.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
-    CHK(MFSetAttributeRatio(media_type_in_.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
-    CHK(MFSetAttributeRatio(media_type_in_.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
-
-    // エンコーダーのセットアップ
-    prop_variant prop;
-    IPropertyStorePtr pPropertyStore;
-    IMFAttributesPtr pEncoderParameters;
-
-    CHK(PSCreateMemoryPropertyStore(__uuidof(IPropertyStore), (void**) &pPropertyStore));
-
-    prop.value().vt = VT_BOOL;
-    prop.value().boolVal = VARIANT_TRUE;
-    CHK(pPropertyStore->SetValue(MFPKEY_VBRENABLED, prop.value()));
-    prop.value().vt = VT_I4;
-    prop.value().lVal = 100;
-    CHK(pPropertyStore->SetValue(MFPKEY_VBRQUALITY, prop.value()));
-
-    CHK(MFCreateAttributes(&pEncoderParameters, 5));
-    CHK(attr_->SetUnknown(MF_SINK_WRITER_ENCODER_CONFIG, pPropertyStore.Get()));
-
-    CHK(sink_writer_->SetInputMediaType(stream_index_, media_type_in_.Get(), pEncoderParameters.Get()));
-
-    // オーディオ
-
-    CHK(MFCreateMediaType(&media_type_in_audio_));
-    //CHK(media_type_in_audio_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
-    //CHK(media_type_in_audio_->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM));
-    //CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, bits_per_sample));
-    //CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, samples_per_second));
-    //CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channel_count));
-    audio_media_type_->CopyAllItems(media_type_in_audio_.Get());
-    CHK(sink_writer_->SetInputMediaType(stream_index_audio_, media_type_in_audio_.Get(), NULL));
-
-    //   
-    // 出力開始  
-    //   
-
-    CHK(sink_writer_->BeginWriting());
-
-    //   
-    // メディア・サンプルの作成   
-    //   
-
-    CHK(MFCreateSample(&sample_));
-    video_sample_time_ = 0;
-    CHK(sample_->SetSampleDuration(hnsSampleDuration));
-
-    //   
-    // メディア・バッファの生成と、メディア・サンプルへの追加    
-    //   
-
-    CHK(MFCreateMemoryBuffer(cbMaxLength, &buffer_));
-    CHK(buffer_->SetCurrentLength(cbMaxLength));
-    CHK(sample_->AddBuffer(buffer_.Get()));
-
-  }
-
-  // テクスチャをメディアバッファに書き込む
-  void video_writer::set_texture_to_sample(ID3D11DeviceContext1* context, ID3D11Texture2D* texture)
-  {
-
-    // タイムスタンプの設定
-    CHK(sample_->SetSampleTime(video_sample_time_));
-
-    // 書き込み先バッファのロック
-    unsigned char *pbBuffer = nullptr;
-    CHK(buffer_->Lock(&pbBuffer, nullptr, nullptr));
-
-    // 読み込みテクスチャをマップ
-    D3D11_MAPPED_SUBRESOURCE mapped;
-    CHK(context->Map(texture, 0, D3D11_MAP_READ, 0, &mapped));
-
-    //CHK(MFCopyImage(pbBuffer, width_ * 4, reinterpret_cast<BYTE*>(mapped.pData), mapped.RowPitch, width_ * 4, height_));
-
-    DWORD *dest = (DWORD*) pbBuffer;
-    const UINT pitch = mapped.RowPitch / sizeof(DWORD);
-    DWORD *src = (DWORD*) mapped.pData + (height_ - 1) * pitch;
-
-    for (UINT i = 0; i < height_; ++i){
-      for (UINT j = 0; j < width_; ++j){
-        *dest++ = *src++;
-      }
-      src -= pitch * 2;
-    }
-
-    // 書き込み先バッファのアンロック
-    CHK(buffer_->Unlock());
-    // テクスチャをアンマップ
-    context->Unmap(texture, 0);
-    video_sample_time_ += hnsSampleDuration;
-  }
-
-  void video_writer::write_video_sample()
-  {
-
-    CHK(sink_writer_->WriteSample(stream_index_, sample_.Get()));
-  }
-
-  void video_writer::write_audio_sample(IMFSample* sample)
-  {
-    CHK(sink_writer_->WriteSample(stream_index_audio_, sample));
-    CHK(sample->GetSampleTime(&audio_sample_time_));
-//    DOUT(boost::wformat(L"%10x \n") % audio_sample_time_);
-  }
-
-  //***********************************************
-  // Audio Reader
-  //***********************************************
-
-  audio_reader::audio_reader(std::wstring& source)
-  {
-    {
-      IMFByteStreamPtr stream;
-      CHK(MFCreateFile(MF_FILE_ACCESSMODE::MF_ACCESSMODE_READ, MF_FILE_OPENMODE::MF_OPENMODE_FAIL_IF_NOT_EXIST, MF_FILE_FLAGS::MF_FILEFLAGS_NONE, source.c_str(), &stream));
-
-      IMFAttributesPtr attr;
-      CHK(MFCreateAttributes(&attr, 10));
-      CHK(attr->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
-      IMFSourceReaderPtr reader;
-      CHK(MFCreateSourceReaderFromByteStream(stream.Get(), attr.Get(), &reader));
-
-//      CHK(MFCreateSourceReaderFromURL(source.c_str(),attr.Get(), &reader));
-      CHK(reader.As(&reader_));
-      QWORD length;
-      CHK(stream->GetLength(&length));
-      fileSize_ = length;
-    }
-
-    //CHK(reader_->GetServiceForStream(0, MF_WRAPPED_OBJECT, __uuidof(IMFByteStream), &stream));
-
-    CHK(reader_->GetNativeMediaType(0, 0, &native_media_type_));
-    CHK(MFCreateMediaType(&current_media_type_));
-    CHK(current_media_type_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
-    CHK(current_media_type_->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM));
-    CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, 
-      MFGetAttributeUINT32(native_media_type_.Get(),MF_MT_AUDIO_BITS_PER_SAMPLE, bits_per_sample)
-      )
-    );
-    CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND,
-      MFGetAttributeUINT32(native_media_type_.Get(), MF_MT_AUDIO_SAMPLES_PER_SECOND, samples_per_second)
-      ));
-    CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS,
-      MFGetAttributeUINT32(native_media_type_.Get(), MF_MT_AUDIO_NUM_CHANNELS,channel_count)
-      ));
-    //DWORD blockAlign;
-    //CHK(native_media_type_->GetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, &blockAlign));
-    //CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT,blockAlign ));
-    CHK(reader_->SetCurrentMediaType(0, nullptr, current_media_type_.Get()));
-    CHK(reader_->GetCurrentMediaType(0, current_media_type_.ReleaseAndGetAddressOf()));
-    UINT32 blockAlign;
-    CHK(current_media_type_->GetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, &blockAlign));
-
-    DOUT(boost::wformat(L"Block Align: %10d %10x") % blockAlign % blockAlign);
-
-  }
-
-  DWORD audio_reader::read_sample(IMFSamplePtr& sample)
-  {
-    DWORD streamIndex, flags;
-    LONGLONG time;
-    CHK(reader_->ReadSample(0, 0, &streamIndex, &flags, &time, sample.ReleaseAndGetAddressOf()));
-    if (!(flags & MF_SOURCE_READERF_ENDOFSTREAM)){
-      video_sample_time_ = time;
-    }
-    return flags;
-  }
-
- 
+	//Windows::Foundation::IAsyncActionWithProgress<double>^ sf::WriteAsync(Windows::Storage::Streams::IRandomAccessStream^ stream)
+	//{
+	//  return create_async([stream]
+	//    (progress_reporter<double> reporter, cancellation_token token) {
+
+	//    // some parameters   
+
+	//    //auto_mf mf;
+
+	//    //
+	//    // Sink Writer の作成
+	//    //
+
+	//    ComPtr<IMFByteStream> spByteStream;
+	//    CHK(MFCreateMFByteStreamOnStreamEx((IUnknown*) stream, &spByteStream));
+
+	//    ComPtr<IMFAttributes> spAttr;
+	//    CHK(MFCreateAttributes(&spAttr, 10));
+	//    CHK(spAttr->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
+
+	//    ComPtr<IMFSinkWriter> spSinkWriter;
+	//    CHK(MFCreateSinkWriterFromURL(L".mp4", spByteStream.Get(), spAttr.Get(), &spSinkWriter));
+
+	//    //   
+	//    // 出力メディアタイプのセットアップ   
+	//    //   
+
+	//    ComPtr<IMFMediaType> spTypeOut;
+	//    CHK(MFCreateMediaType(&spTypeOut));
+	//    CHK(spTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+	//    CHK(spTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
+	//    CHK(spTypeOut->SetUINT32(MF_MT_AVG_BITRATE, BITRATE));
+	//    CHK(spTypeOut->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
+	//    CHK(MFSetAttributeSize(spTypeOut.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
+	//    CHK(MFSetAttributeRatio(spTypeOut.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
+	//    CHK(MFSetAttributeRatio(spTypeOut.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
+
+	//    DWORD streamIndex;
+	//    CHK(spSinkWriter->AddStream(spTypeOut.Get(), &streamIndex));
+
+	//    //   
+	//    // 入力メディアタイプのセットアップ  
+	//    //   
+
+	//    ComPtr<IMFMediaType> spTypeIn;
+	//    CHK(MFCreateMediaType(&spTypeIn));
+	//    CHK(spTypeIn->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+	//    CHK(spTypeIn->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));
+	//    CHK(spTypeIn->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
+	//    CHK(MFSetAttributeSize(spTypeIn.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
+	//    CHK(MFSetAttributeRatio(spTypeIn.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
+	//    CHK(MFSetAttributeRatio(spTypeIn.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
+
+	//    CHK(spSinkWriter->SetInputMediaType(streamIndex, spTypeIn.Get(), nullptr));
+
+	//    //   
+	//    //    
+	//    //   
+
+	//    CHK(spSinkWriter->BeginWriting());
+
+	//    double progress = 0.;
+	//    LONGLONG hnsSampleTime = 0;
+	//    for (unsigned int nFrame = 0; nFrame < FRAME_NUM; nFrame++)
+	//    {
+	//      if (token.is_canceled())
+	//      {
+	//        break;
+	//      }
+
+	//      double newProgress = 100. * (double) nFrame / (double) FRAME_NUM;
+	//      if (newProgress - progress >= 1.)
+	//      {
+	//        progress = newProgress;
+	//        reporter.report(progress);
+	//      }
+
+	//      //   
+	//      // Create a media sample   
+	//      //   
+
+	//      ComPtr<IMFSample> spSample;
+	//      CHK(MFCreateSample(&spSample));
+	//      CHK(spSample->SetSampleDuration(hnsSampleDuration));
+	//      CHK(spSample->SetSampleTime(hnsSampleTime));
+	//      hnsSampleTime += hnsSampleDuration;
+
+	//      //   
+	//      // Add a media buffer filled with random data   
+	//      //   
+
+	//      ComPtr<IMFMediaBuffer> spBuffer;
+	//      CHK(MFCreateMemoryBuffer(cbMaxLength, &spBuffer));
+	//      CHK(spBuffer->SetCurrentLength(cbMaxLength));
+	//      CHK(spSample->AddBuffer(spBuffer.Get()));
+
+	//      // Draw a bouncing white rectangle over black background
+	//      unsigned char *pbBuffer = nullptr;
+	//      CHK(spBuffer->Lock(&pbBuffer, nullptr, nullptr));
+	//      for (unsigned int i = 0; i < HEIGHT; i++)
+	//      {
+	//        for (unsigned int j = 0; j < WIDTH; j++)
+	//        {
+	//          unsigned int pos = 4 * (i * WIDTH + j);
+	//          unsigned char val = 255 * (
+	//            (abs((int) WIDTH / 2 - (int) j) < (WIDTH / 4)) &&
+	//            (abs(HEIGHT * (.5 + .1 * sin(2. * M_PI * (double) nFrame / (double) ONE_SECOND)) - (int) i) < (HEIGHT / 4))
+	//            );
+	//          pbBuffer[pos] = val;
+	//          pbBuffer[pos + 1] = val;
+	//          pbBuffer[pos + 2] = val;
+	//          pbBuffer[pos + 3] = val;
+	//        }
+	//      }
+	//      CHK(spBuffer->Unlock());
+
+	//      //   
+	//      // Write the media sample   
+	//      //   
+
+	//      CHK(spSinkWriter->WriteSample(streamIndex, spSample.Get()));
+	//    }
+
+	//    if (!token.is_canceled())
+	//    {
+	//      CHK(spSinkWriter->Finalize());
+
+	//      reporter.report(100.);
+	//    }
+	//  });
+	//}
+
+
+	//---------------------------------------------------------------------
+	const unsigned int RATE_NUM = 30000;
+	const unsigned int RATE_DENOM = 1000;
+	const long long hnsSampleDuration = 10000000 * (long long) RATE_DENOM / (long long) RATE_NUM;
+
+	video_writer::copy_image::copy_image(uint32_t width, uint32_t height, uint32_t pitch)
+	{
+	
+		uint32_t w_byte = width * 4 / 16;
+		uint32_t index = 0;
+
+		std::function<void()> funcs[3] =
+		{
+			[this] { mov16(); },
+			[this] { mov32(); },
+			[this] { mov64(); }
+		};
+
+		for (; index < 2; ++index){
+			if ((w_byte & 1) == 1)
+			{
+				break;
+			}
+			else {
+				w_byte = w_byte / 2;
+			}
+		}
+
+		mov(r8, w_byte);
+		mov(r9, height);
+		mov(r10, pitch * 2);
+		L("L2");
+		mov(rax, r8);
+		L("L1");
+		funcs[index]();
+		sub(rax, 1);
+		jnz("L1");
+		sub(rcx, r10);
+		sub(r9, 1);
+		jnz("L2");
+		vzeroupper();
+		ret();
+
+	}
+
+	void video_writer::copy_image::mov16()
+	{
+		vmovdqa(xmm0, ptr[rcx]);
+		vmovdqa(ptr[rdx], xmm0);
+		add(rcx, 16);
+		add(rdx, 16);
+	}
+
+	void video_writer::copy_image::mov32()
+	{
+		vmovdqa(xmm0, ptr[rcx]);
+		vmovdqa(xmm1, ptr[rcx + 16]);
+		vmovdqa(ptr[rdx], xmm0);
+		vmovdqa(ptr[rdx + 16], xmm1);
+
+		add(rcx, 32);
+		add(rdx, 32);
+	}
+
+	void video_writer::copy_image::mov64()
+	{
+		vmovdqa(xmm0, ptr[rcx]);
+		vmovdqa(xmm1, ptr[rcx + 16]);
+		vmovdqa(ptr[rdx], xmm0);
+		vmovdqa(xmm2, ptr[rcx + 32]);
+		vmovdqa(ptr[rdx + 16], xmm1);
+		vmovdqa(xmm3, ptr[rcx + 48]);
+		vmovdqa(ptr[rdx + 32], xmm2);
+		add(rcx, 64);
+		vmovdqa(ptr[rdx + 48], xmm3);
+		add(rdx, 64);
+
+	}
+
+	video_writer::video_writer(
+		std::wstring& target_path, IMFMediaTypePtr& audio_media_type, ID3D11DeviceContext2Ptr& context, ID3D11Texture2DPtr& texture
+		/*, unsigned int width, unsigned int height*/) : target_path_(target_path), audio_media_type_(audio_media_type), context_(context), texture_(texture)
+	{
+		D3D11_TEXTURE2D_DESC desc = {};
+		texture->GetDesc(&desc);
+		width_ = desc.Width;
+		height_ = desc.Height;
+
+		const unsigned int WIDTH = width_;
+		const unsigned int HEIGHT = height_;
+		const unsigned int BITRATE = 9000000;
+		const unsigned int ASPECT_NUM = 1;
+		const unsigned int ASPECT_DENOM = 1;
+		const unsigned long  BPP_IN = 32;
+		const unsigned long cbMaxLength = WIDTH * HEIGHT * BPP_IN / 8;
+		const unsigned int ONE_SECOND = RATE_NUM / RATE_DENOM;
+		const unsigned int FRAME_NUM = 10 * ONE_SECOND;
+
+		samples_per_second = 44100;
+		average_bytes_per_second = 24000;
+		channel_count = 2;
+		bits_per_sample = 16;
+
+		// 入力ストリームから SinkWriterを生成する
+
+		CHK(MFCreateFile(MF_FILE_ACCESSMODE::MF_ACCESSMODE_WRITE, MF_FILE_OPENMODE::MF_OPENMODE_DELETE_IF_EXIST, MF_FILE_FLAGS::MF_FILEFLAGS_NONE, target_path.c_str(), &byte_stream_));
+
+		CHK(MFCreateAttributes(&attr_, 10));
+		CHK(attr_->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
+		CHK(attr_->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, true));
+
+
+
+
+		IMFSinkWriterPtr sinkWriter;
+
+		CHK(MFCreateSinkWriterFromURL(L".mp4", byte_stream_.Get(), attr_.Get(), &sinkWriter));
+		CHK(sinkWriter.As(&sink_writer_));
+
+		//   
+		// 出力メディアタイプのセットアップ   
+		//   
+
+		// ビデオ
+
+		CHK(MFCreateMediaType(&media_type_out_));
+		CHK(media_type_out_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+		CHK(media_type_out_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
+		CHK(media_type_out_->SetUINT32(MF_MT_MPEG2_PROFILE, eAVEncH264VProfile_Main));
+		//CHK(media_type_out_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));   
+		CHK(media_type_out_->SetUINT32(MF_MT_AVG_BITRATE, BITRATE));
+		CHK(media_type_out_->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
+		CHK(MFSetAttributeSize(media_type_out_.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
+		CHK(MFSetAttributeRatio(media_type_out_.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
+		CHK(MFSetAttributeRatio(media_type_out_.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
+
+		CHK(sink_writer_->AddStream(media_type_out_.Get(), &stream_index_));
+		IMFTransformPtr mft;
+		//IMFRateSupportPtr ptr;
+
+		//CHK(sink_writer_->GetServiceForStream(stream_index_, MF_RATE_CONTROL_SERVICE, __uuidof(IMFRateSupport), &ptr));
+
+		// オーディオ
+
+		CHK(MFCreateMediaType(&media_type_out_audio_));
+		CHK(media_type_out_audio_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
+		CHK(media_type_out_audio_->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_AAC));
+		CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, samples_per_second));
+		CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, bits_per_sample));
+		CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channel_count));
+		CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_AVG_BYTES_PER_SECOND, average_bytes_per_second));
+		CHK(media_type_out_audio_->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, 1));
+		CHK(sink_writer_->AddStream(media_type_out_audio_.Get(), &stream_index_audio_));
+
+		//   
+		// 入力メディアタイプのセットアップ  
+		//   
+
+		// ビデオ
+
+		CHK(MFCreateMediaType(&media_type_in_));
+		CHK(media_type_in_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
+		CHK(media_type_in_->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));
+		CHK(media_type_in_->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
+		CHK(MFSetAttributeSize(media_type_in_.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
+		CHK(MFSetAttributeRatio(media_type_in_.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
+		CHK(MFSetAttributeRatio(media_type_in_.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
+
+		// エンコーダーのセットアップ
+		prop_variant prop;
+		IPropertyStorePtr pPropertyStore;
+		IMFAttributesPtr pEncoderParameters;
+
+		CHK(PSCreateMemoryPropertyStore(__uuidof(IPropertyStore), (void**) &pPropertyStore));
+
+		prop.value().vt = VT_BOOL;
+		prop.value().boolVal = VARIANT_TRUE;
+		CHK(pPropertyStore->SetValue(MFPKEY_VBRENABLED, prop.value()));
+		prop.value().vt = VT_I4;
+		prop.value().lVal = 100;
+		CHK(pPropertyStore->SetValue(MFPKEY_VBRQUALITY, prop.value()));
+
+		CHK(MFCreateAttributes(&pEncoderParameters, 5));
+		CHK(attr_->SetUnknown(MF_SINK_WRITER_ENCODER_CONFIG, pPropertyStore.Get()));
+
+		CHK(sink_writer_->SetInputMediaType(stream_index_, media_type_in_.Get(), pEncoderParameters.Get()));
+
+		// オーディオ
+
+		CHK(MFCreateMediaType(&media_type_in_audio_));
+		//CHK(media_type_in_audio_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
+		//CHK(media_type_in_audio_->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM));
+		//CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE, bits_per_sample));
+		//CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND, samples_per_second));
+		//CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channel_count));
+		audio_media_type_->CopyAllItems(media_type_in_audio_.Get());
+		CHK(sink_writer_->SetInputMediaType(stream_index_audio_, media_type_in_audio_.Get(), NULL));
+
+		//   
+		// 出力開始  
+		//   
+
+		CHK(sink_writer_->BeginWriting());
+
+		//   
+		// メディア・サンプルの作成   
+		//   
+
+		CHK(MFCreateSample(&sample_));
+		video_sample_time_ = 0;
+		CHK(sample_->SetSampleDuration(hnsSampleDuration));
+
+		//   
+		// メディア・バッファの生成と、メディア・サンプルへの追加    
+		//   
+
+		CHK(MFCreateAlignedMemoryBuffer(cbMaxLength, MF_16_BYTE_ALIGNMENT, &buffer_));// 16 byteアラインメント
+		CHK(buffer_->SetCurrentLength(cbMaxLength));
+		CHK(sample_->AddBuffer(buffer_.Get()));
+
+		//
+		// 読み込みテクスチャをマップ
+		sf::map<> map(context,texture, 0, D3D11_MAP_READ, 0);
+		copy_image_.reset(new video_writer::copy_image(width_, height_, map.row_pitch()));
+		copy_func_ = (copy_func_t)copy_image_->getCode();
+
+	}
+
+#define SF_AVX 
+	// テクスチャをメディアバッファに書き込む
+	void video_writer::set_texture_to_sample()
+	{
+
+		// タイムスタンプの設定
+		CHK(sample_->SetSampleTime(video_sample_time_));
+
+		// 書き込み先バッファのロック
+		sf::media_buffer_lock<> buffer(buffer_);
+
+		// 読み込みテクスチャをマップ
+		sf::map<> map(context_, texture_, 0, D3D11_MAP_READ, 0);
+
+		//CHK(MFCopyImage(pbBuffer, width_ * 4, reinterpret_cast<BYTE*>(mapped.pData), mapped.RowPitch, width_ * 4, height_));
+#ifndef SF_AVX
+		// Xbyak で書く前のコード
+		DWORD *dest = (DWORD*) buffer.buffer();
+		const UINT pitch = map.row_pitch() / sizeof(uint32_t);
+		DWORD *src = (DWORD*) map.data() + (height_ - 1) * pitch;
+
+		for (UINT i = 0; i < height_; ++i){
+			for (UINT j = 0; j < width_; ++j){
+				*dest++ = *src++;
+			}
+			src -= pitch * 2;
+		}
+#else
+		// Xbyakで書き換えた後のコード
+		void * src = (uint8_t*)map.data() + (height_ - 1) * map.row_pitch();
+		(copy_func_)(src,buffer.buffer());
+
+#endif
+		video_sample_time_ += hnsSampleDuration;
+	}
+
+	void video_writer::write_video_sample()
+	{
+
+		CHK(sink_writer_->WriteSample(stream_index_, sample_.Get()));
+	}
+
+	void video_writer::write_audio_sample(IMFSample* sample)
+	{
+		CHK(sink_writer_->WriteSample(stream_index_audio_, sample));
+		CHK(sample->GetSampleTime(&audio_sample_time_));
+		//    DOUT(boost::wformat(L"%10x \n") % audio_sample_time_);
+	}
+
+	//***********************************************
+	// Audio Reader
+	//***********************************************
+
+	audio_reader::audio_reader(std::wstring& source)
+	{
+		{
+			IMFByteStreamPtr stream;
+			CHK(MFCreateFile(MF_FILE_ACCESSMODE::MF_ACCESSMODE_READ, MF_FILE_OPENMODE::MF_OPENMODE_FAIL_IF_NOT_EXIST, MF_FILE_FLAGS::MF_FILEFLAGS_NONE, source.c_str(), &stream));
+
+			IMFAttributesPtr attr;
+			CHK(MFCreateAttributes(&attr, 10));
+			CHK(attr->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
+			IMFSourceReaderPtr reader;
+			CHK(MFCreateSourceReaderFromByteStream(stream.Get(), attr.Get(), &reader));
+
+			//      CHK(MFCreateSourceReaderFromURL(source.c_str(),attr.Get(), &reader));
+			CHK(reader.As(&reader_));
+			QWORD length;
+			CHK(stream->GetLength(&length));
+			fileSize_ = length;
+		}
+
+		//CHK(reader_->GetServiceForStream(0, MF_WRAPPED_OBJECT, __uuidof(IMFByteStream), &stream));
+
+		CHK(reader_->GetNativeMediaType(0, 0, &native_media_type_));
+		CHK(MFCreateMediaType(&current_media_type_));
+		CHK(current_media_type_->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio));
+		CHK(current_media_type_->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM));
+		CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_BITS_PER_SAMPLE,
+			MFGetAttributeUINT32(native_media_type_.Get(), MF_MT_AUDIO_BITS_PER_SAMPLE, bits_per_sample)
+			)
+			);
+		CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_SAMPLES_PER_SECOND,
+			MFGetAttributeUINT32(native_media_type_.Get(), MF_MT_AUDIO_SAMPLES_PER_SECOND, samples_per_second)
+			));
+		CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS,
+			MFGetAttributeUINT32(native_media_type_.Get(), MF_MT_AUDIO_NUM_CHANNELS, channel_count)
+			));
+		//DWORD blockAlign;
+		//CHK(native_media_type_->GetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, &blockAlign));
+		//CHK(current_media_type_->SetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT,blockAlign ));
+		CHK(reader_->SetCurrentMediaType(0, nullptr, current_media_type_.Get()));
+		CHK(reader_->GetCurrentMediaType(0, current_media_type_.ReleaseAndGetAddressOf()));
+		UINT32 blockAlign;
+		CHK(current_media_type_->GetUINT32(MF_MT_AUDIO_BLOCK_ALIGNMENT, &blockAlign));
+
+		DOUT(boost::wformat(L"Block Align: %10d %10x") % blockAlign % blockAlign);
+
+	}
+
+	DWORD audio_reader::read_sample(IMFSamplePtr& sample)
+	{
+		DWORD streamIndex, flags;
+		LONGLONG time;
+		CHK(reader_->ReadSample(0, 0, &streamIndex, &flags, &time, sample.ReleaseAndGetAddressOf()));
+		if (!(flags & MF_SOURCE_READERF_ENDOFSTREAM)){
+			video_sample_time_ = time;
+		}
+		return flags;
+	}
+
+
 
 }
 

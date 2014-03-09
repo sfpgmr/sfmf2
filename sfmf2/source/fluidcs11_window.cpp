@@ -374,7 +374,10 @@ namespace sf
             switch (HIWORD(wParam)){
             case BN_CLICKED:
               auto* this_ptr = this;
-              application::instance()->execute_rendering(std::bind(&fluidcs11_window::impl::progress, this_ptr, std::placeholders::_1));
+              application::instance()->execute_rendering(
+				  std::bind(&fluidcs11_window::impl::progress, this_ptr, std::placeholders::_1),
+				  std::bind(&fluidcs11_window::impl::complete, this_ptr, std::placeholders::_1)
+				  );
               break;
             }
           }
@@ -435,6 +438,19 @@ namespace sf
         return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
       }, *child_base_, 30, 180, 600, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
 
+	  compute_time_.reset(new sf::control_base(std::wstring(PROGRESS_CLASS), std::wstring(L"テスト2"),
+		  [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
+	  {
+		  return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
+	  }, *child_base_, 30, 120, 600, 30, 0, 0, WS_TABSTOP | WS_VISIBLE | WS_CHILD));
+
+	  // 生成時間表示
+	  compute_time_.reset(new sf::control_base(std::wstring(L"EDIT"), std::wstring(L""),
+		  [this](sf::control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam)->LRESULT
+	  {
+		  return DefSubclassProc((HWND) base.raw_handle(), uMsg, wParam, lParam);
+	  }, *child_base_, 30, 480, 600, 30, 0, 0, WS_VISIBLE | WS_CHILD));
+
       add_dcomp_content_to_root(*renderer_, (HWND) child_base_->raw_handle());
 
     }
@@ -444,6 +460,11 @@ namespace sf
       send_message(progress_, PBM_SETPOS, progress, 0);
     }
 
+
+	void complete(std::chrono::duration<double>& time)
+	{
+		send_message(compute_time_, WM_SETTEXT, 0, (LPARAM)(boost::wformat(L"Encoding Time: %d sec") % time.count()).str().c_str());
+	}
 
 
     base_win32_window2_t::result_t on_paint()
@@ -581,7 +602,7 @@ namespace sf
     bool init_;
     sf::window_class_ex child_class_;
     std::unique_ptr<control_base> child_base_,src_path_text_,dest_path_text_, src_path_btn_, dest_path_btn_,render_button_, progress_,
-      title_text_;
+      title_text_,compute_time_;
     D2D1_SIZE_U icon_size_;
 
     // thisとhwndをつなぐthunkクラス

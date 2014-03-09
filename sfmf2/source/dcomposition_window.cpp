@@ -373,7 +373,9 @@ namespace sf
             switch (HIWORD(wParam)){
             case BN_CLICKED:
               auto* this_ptr = this;
-              application::instance()->execute_rendering(std::bind(&dcomposition_window::impl::progress, this_ptr, std::placeholders::_1));
+              application::instance()->execute_rendering(
+				  std::bind(&dcomposition_window::impl::progress, this_ptr, std::placeholders::_1),
+				  [](std::chrono::duration<double>& time)->void{});
               break;
             }
           }
@@ -442,7 +444,6 @@ namespace sf
     {
       send_message(progress_, PBM_SETPOS, progress, 0);
     }
-
 
 
     base_win32_window2_t::result_t on_paint()

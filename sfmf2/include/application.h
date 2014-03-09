@@ -204,7 +204,7 @@ namespace sf {
       }
     }
 
-    void execute_rendering(const std::function<void(int)>& progress);
+	void execute_rendering(const std::function<void(int)>& progress, const std::function<void(std::chrono::duration<double>&)> & complete);
 
     typedef boost::signals2::signal<void()> renderer_source_path_changed_t;
     typedef boost::signals2::signal<void()> renderer_target_path_changed_t;

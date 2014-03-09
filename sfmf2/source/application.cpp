@@ -287,7 +287,7 @@ namespace sf {
 
   }
 
-  void application::execute_rendering(const std::function<void(int)>& progress)
+  void application::execute_rendering(const std::function<void(int)>& progress, const std::function<void (std::chrono::duration<double>&)> &  complete)
   {
     renderer_enable_ = false;
     renderer_enable_status_changed_(renderer_enable_);
@@ -301,6 +301,7 @@ namespace sf {
       }
       );
     video_renderer_->progress().connect(progress);
+	video_renderer_->complete().connect(complete);
     video_renderer_->start();
   }
 

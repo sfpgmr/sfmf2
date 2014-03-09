@@ -760,5 +760,47 @@ namespace sf {
     return D2D1::ColorF(r, g, b, alpha);
   }
 
+  template <typename D3DContextPtr = ID3D11DeviceContext2Ptr,typename TexturePtr = ID3D11Texture2DPtr>
+  struct map {
+	  map(D3DContextPtr& context, TexturePtr & texture, uint32_t subresource_index, D3D11_MAP type, uint32_t flags)
+		  : context_(context), texture_(texture)
+	  {
+		  CHK(context->Map(texture.Get(), subresource_index, type, flags, &map_));
+	  
+	  }
+
+	  ~map()
+	  {
+		  context_->Unmap(texture_.Get(), 0);
+	  }
+
+	  void * data(){ return map_.pData; }
+	  uint32_t row_pitch() { return map_.RowPitch; }
+	  uint32_t depth_pitch() { return map_.DepthPitch; }
+  private:
+	  D3DContextPtr& context_;
+	  TexturePtr& texture_;
+	  D3D11_MAPPED_SUBRESOURCE map_;
+  };
+
+  template <typename MediaBufferPtr = IMFMediaBufferPtr>
+  struct media_buffer_lock
+  {
+	  media_buffer_lock(MediaBufferPtr& buffer, DWORD curent_length = 0, DWORD max_length = 0)
+		  : buffer_(buffer)
+	  {
+		  CHK(buffer->Lock(&byte_buffer_,&curent_length,&max_length));
+	  }
+
+	  ~media_buffer_lock()
+	  {
+		  buffer_->Unlock();
+	  }
+
+	  uint8_t * buffer(){ return byte_buffer_; }
+  private:
+	  uint8_t *byte_buffer_;
+	  MediaBufferPtr& buffer_;
+  };
 }
 

@@ -64,8 +64,7 @@ struct h264_renderer<Renderer>::impl
   {
     sf::com_initialize com_init;
     sf::auto_mf mf;
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-    start = std::chrono::system_clock::now();
+    //std::chrono::time_point<std::chrono::system_clock> start, end;
     init();
 
     concurrency::call<int> preview_timer_func([this](int v)-> void {
@@ -75,13 +74,14 @@ struct h264_renderer<Renderer>::impl
 
     concurrency::timer<int> preview_timer(100, 0, &preview_timer_func, true);
     preview_timer.start();
-    render2();
-    preview_timer.stop();
+	//start = std::chrono::system_clock::now();
+	render2();
+	//end = std::chrono::system_clock::now();
+	preview_timer.stop();
     clean_up();
-    end = std::chrono::system_clock::now();
-    compute_time_ = end - start;
+    //compute_time_ = end - start;
 
-    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+    //std::time_t end_time = std::chrono::system_clock::to_time_t(end);
 
     DOUT(boost::wformat(L"compute time: %f \n") % compute_time_.count());
     complete_(compute_time_);
@@ -124,7 +124,7 @@ private:
     init_graphics();
     renderer_.reset(new Renderer(video_renderer_resources(width_, height_, d3d_context_, video_resource_view_, video_render_target_view_, video_depth_view_, video_texture_, video_depth_texture_, video_bitmap_, d2d_context_), init_params_));
     audio_reader_.reset(new audio_reader(source_));
-    video_writer_.reset(new video_writer(destination_,audio_reader_->current_media_type(),width_,height_));
+	video_writer_.reset(new video_writer(destination_, audio_reader_->current_media_type(), d3d_context_, video_stage_texture_));
   }
 
   void init_graphics(){
@@ -499,7 +499,9 @@ private:
     size_t end = audio_samples_[0].size();
     LONGLONG end_time = audio_reader_->sample_time();
     progress_bkp = 0;
-    while (end_time > video_writer_->video_sample_time() && sample_pos < end)
+	std::chrono::time_point<std::chrono::system_clock> start_tm, end_tm;
+	start_tm = std::chrono::system_clock::now();
+	while (end_time > video_writer_->video_sample_time() && sample_pos < end)
     {
       if (terminate_){
         break;
@@ -512,7 +514,9 @@ private:
       }
       sample_pos += 44100 / 30;//lengthTick / 2;
     }
-    video_writer_->finalize();
+	end_tm = std::chrono::system_clock::now();
+	compute_time_ = end_tm - start_tm;
+	video_writer_->finalize();
   }
 
   void render_to_video2(int samplepos)
@@ -558,7 +562,7 @@ private:
 //    d3d_context_->CopyResource(video_stage_texture_.Get(), video_texture_.Get());
     //    d3d_context_->ResolveSubresource(video_stage_texture_.Get(), 0, video_texture_.Get(), 0, DXGI_FORMAT_B8G8R8A8_UNORM);
     // ビデオデータを作成し、サンプルに収める
-    video_writer_->set_texture_to_sample(d3d_context_.Get(), video_stage_texture_.Get());
+    video_writer_->set_texture_to_sample();
     // ビデオデータを書き込む
     video_writer_->write_video_sample();
 
@@ -597,7 +601,7 @@ private:
         // 描画したテクスチャデータをステージテクスチャにコピーする
         d3d_context_->CopyResource(video_stage_texture_.Get(),video_texture_.Get());
         // ビデオデータを作成し、サンプルに収める
-        video_writer_->set_texture_to_sample(d3d_context_.Get(), video_stage_texture_.Get());
+        video_writer_->set_texture_to_sample();
       }
 
       // ビデオデータを書き込む

@@ -194,6 +194,10 @@
 #include <ppl.h>
 #include <ppltasks.h>
 #include <agents.h>
+#define XBYAK64
+#include "xbyak/xbyak.h"
+#include "xbyak/xbyak_util.h"
+#include <immintrin.h>
 
 //#define _WRL_PTR_TYPEDEF(x) typedef Microsoft::WRL::ComPtr<x> x ## Ptr
 #include "sfhelper.h"
@@ -201,6 +205,9 @@
 #include <chrono>
 
 #include "app_base_directory.h"
+
+// 
+
 
 //#include <Box2D.h>
 //_WRL_PTR_TYPEDEF();
