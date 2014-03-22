@@ -137,7 +137,7 @@ namespace sf {
     // ウィンドウを作成する
     window_ = sf::create_fluidcs11_window(
       std::wstring(L"WAVファイルから動画ファイルを生成する"), std::wstring(L"WAVファイルから動画ファイルを生成する"), 5, false, 1024, 768);
-    window_->closed().connect(
+    window_->on_closed().connect(
       [this]() -> void{
       if (video_renderer_)
           video_renderer_->terminate();
@@ -168,6 +168,7 @@ namespace sf {
 
     //reader_agent_.setup(L"test2.wav");
     //reader_agent_.read_file();
+	sf::print_mft();
 
     // メッセージ処理ループ
     WPARAM ret = sf::run_message_loop()();
@@ -198,7 +199,7 @@ namespace sf {
       reader_agent_.setup(file_path);
       //window_->reader_ready();
     } catch (win32_error_exception& e) {
-      message_box((HWND)window_->raw_handle(),(boost::wformat(L"ファイル読み込み時にエラーが発生しました。%s") % e.error()).str(),wstring(L"ファイル読込エラー"));
+      message_box(window_->hwnd(),(boost::wformat(L"ファイル読み込み時にエラーが発生しました。%s") % e.error()).str(),wstring(L"ファイル読込エラー"));
     }
   }
 
@@ -208,7 +209,7 @@ namespace sf {
       reader_agent_.read_file();
       //window_->reader_read_file();
     } catch (win32_error_exception& e) {
-      message_box((HWND) window_->raw_handle(), (boost::wformat(L"再生開始時にエラーが発生しました。%s") % e.error()).str(), wstring(L"再生エラー"));
+      message_box(window_->hwnd(), (boost::wformat(L"再生開始時にエラーが発生しました。%s") % e.error()).str(), wstring(L"再生エラー"));
     }
   }
 
@@ -223,7 +224,7 @@ namespace sf {
         //window_->reader_read_file();
       }
     } catch (win32_error_exception& e) {
-      message_box((HWND) window_->raw_handle(), (boost::wformat(L"一時停止時にエラーが発生しました。%s") % e.error()).str(), wstring(L"一時停止エラー"));
+      message_box(window_->hwnd(), (boost::wformat(L"一時停止時にエラーが発生しました。%s") % e.error()).str(), wstring(L"一時停止エラー"));
     }
   }
 
@@ -233,7 +234,7 @@ namespace sf {
       reader_agent_.stop();
       //window_->reader_stop();
     } catch (win32_error_exception& e) {
-      message_box((HWND) window_->raw_handle(), (boost::wformat(L"停止時にエラーが発生しました。%s") % e.error()).str(), wstring(L"停止エラー"));
+      message_box(window_->hwnd(), (boost::wformat(L"停止時にエラーが発生しました。%s") % e.error()).str(), wstring(L"停止エラー"));
     }
   }
 
@@ -297,7 +298,7 @@ namespace sf {
     video_renderer_->preview_updated().connect
       (
       [this]() -> void {
-        InvalidateRect((HWND)window_->raw_handle(),NULL,FALSE);
+        InvalidateRect(window_->hwnd(),NULL,FALSE);
       }
       );
     video_renderer_->progress().connect(progress);

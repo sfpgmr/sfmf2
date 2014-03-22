@@ -4,6 +4,7 @@
 Microsoft Dolby Digital Plus Decoder MFT
 WMAudio Decoder MFT
 Microsoft AAC Audio Decoder MFT
+A-law Wrapper MFT
 GSM ACM Wrapper MFT
 WMAPro over S/PDIF MFT
 Microsoft MPEG Audio Decoder MFT
@@ -61,11 +62,6 @@ Color Converter MFT
 **MFT_CATEGORY_VIDEO_ENCODER**
 
 Intel® Quick Sync Video H.264 Encoder MFT
-H264 Encoder MFT
-WMVideo8 Encoder MFT
-WMVideo9 Encoder MFT
-Microsoft MPEG-2 Video Encoder MFT
 
 **MFT_CATEGORY_VIDEO_PROCESSOR**
 
-Microsoft Video Processor MFT

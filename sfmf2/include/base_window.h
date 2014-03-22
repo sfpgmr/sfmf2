@@ -24,48 +24,22 @@
 #include "dpi.h"
 
 namespace sf {
+
 /** window ベースクラス */
-
-struct rect {
-  float width;
-  float height;
-};
-
 struct base_window : boost::noncopyable
 {
-  typedef boost::signals2::signal<void ()> on_render_type;
-  typedef boost::signals2::signal<void()> closed_t;
-
-  on_render_type on_render;
-  
+  typedef boost::signals2::signal< void() > on_closed_t;
   // 生のWindowハンドルを返す。
-  virtual void * raw_handle() const = 0;
-  // ウィンドウを生成する
-  virtual void create() = 0;
-//  virtual void show(uint32_t show_flag) = 0;
-  // ウィンドウを表示する
-  virtual void show() = 0;
-  // ウィンドウが今表示されているかを返す
-  virtual bool is_show() = 0;
-  // ウィンドウを隠す
-  virtual void hide() = 0;
-  //virtual void activate() = 0;
-  virtual bool is_activate() = 0;
-  virtual float width() = 0;
-  virtual float height() = 0;
+  operator HWND(){ return hwnd(); }
+  virtual HWND hwnd()  const = 0;
+  virtual float width() const  = 0;
+  virtual float height() const = 0;
   virtual sf::dpi& dpi() = 0;
   virtual bool is_fullscreen() = 0;
-
-  virtual void text(std::wstring& text) = 0;
-  //virtual std::wstring& text() = 0;
-
-  virtual void update() = 0;
-  virtual closed_t& closed() = 0;
-
+  virtual MARGINS& margins() = 0;
+  virtual on_closed_t& on_closed() = 0;
 protected:
-
   virtual ~base_window() {};
-
 };
 
 }

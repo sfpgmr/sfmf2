@@ -30,7 +30,6 @@
 //Mf.lib Mfidl.h
 namespace sf {
   namespace player {
-    void print_mft();
 
 
     IMFMediaSourcePtr CreateMediaSource(const std::wstring& pszURL);
@@ -52,7 +51,7 @@ namespace sf {
         throw win32_error_exception(E_OUTOFMEMORY);
       }
       p->process_event(ev::Init());
-      print_mft();
+//      print_mft();
 //      p->processInitialize();
       return p;
     }
@@ -665,68 +664,6 @@ namespace sf {
       return pTopology;
     }
 
-  void print_mft_(const GUID& guid,std::wfstream& out)
-  {
-    co_task_memory<IMFActivate*> activate;
-
-    UINT32 count = 0;
-    
-    HRESULT hr = MFTEnumEx(guid,MFT_ENUM_FLAG_ALL,NULL,NULL,&activate,&count);
-    
-    if(SUCCEEDED(hr) && count > 0)
-    {
-      for(int i = 0; i < count;++i)
-      {
-        UINT32 l = 0;
-        UINT32 l1 = 0;
-        activate.get()[i]->GetStringLength(MFT_FRIENDLY_NAME_Attribute,&l);
-        std::unique_ptr<wchar_t[]> name(new wchar_t[l+1]);
-        memset(name.get(),0,l+1);
-        hr = activate.get()[i]->GetString(MFT_FRIENDLY_NAME_Attribute,name.get(),l+1,&l1);
-        out << name.get() << std::endl;
-        activate.get()[i]->Release();
-      }
-      //CoTaskMemFree(activate);
-    }
-  }
-
-  void print_mft()
-  {
-    std::wfstream out(L"MFT.txt",std::ios_base::out | std::ios_base::trunc);
-
-    out << std::endl << "**" << L"MFT_CATEGORY_AUDIO_DECODER" << L"**" << std::endl << std::endl;
-
-    print_mft_(MFT_CATEGORY_AUDIO_DECODER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_AUDIO_EFFECT" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_AUDIO_EFFECT,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_AUDIO_ENCODER" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_AUDIO_ENCODER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_DEMULTIPLEXER" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_DEMULTIPLEXER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_MULTIPLEXER" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_MULTIPLEXER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_OTHER" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_OTHER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_DECODER" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_VIDEO_DECODER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_EFFECT" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_VIDEO_EFFECT,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_ENCODER" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_VIDEO_ENCODER,out);
-
-    out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_PROCESSOR" << L"**" << std::endl << std::endl;
-    print_mft_(MFT_CATEGORY_VIDEO_PROCESSOR,out);
-
-    out.close();
-  }
 }
 
 }

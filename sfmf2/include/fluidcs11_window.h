@@ -33,6 +33,8 @@ namespace sf
     );
 
   /** toplevel ウィンドウクラス */
+
+
   /* このクラスは、create_dcltoplevel_window 関数からのみ生成可能 */
   struct fluidcs11_window : public base_window
   {
@@ -54,25 +56,19 @@ namespace sf
 
     ~fluidcs11_window(){};
  
-    void * raw_handle() const;
+    HWND hwnd() const override;
     void create();
-    void fluidcs11_window::show();
-    bool fluidcs11_window::is_show();
-    void fluidcs11_window::hide();
-    virtual bool is_activate() override;
-    virtual float width() override;
-    virtual float height() override;
-    virtual sf::dpi& dpi() override;
-    virtual bool is_fullscreen() override;
-    //void message_box(const std::wstring& text,const std::wstring& caption,uint32_t type = MB_OK);
-    void text(std::wstring& text);
-    //std::wstring text()
-    void update();
+    virtual float width() const override;
+    virtual float height() const override;
+    virtual sf::dpi& dpi()  override;
+	virtual MARGINS& margins() override;
+	virtual bool is_fullscreen() override;
+	virtual on_closed_t& on_closed() override;
     void render();
     void video_bitmap(ID2D1Bitmap1Ptr & bitmap);
-    virtual base_window::closed_t& closed() override;
+
+	struct impl;
   private:
-    struct impl;
     fluidcs11_window(const std::wstring& menu_name,const std::wstring& name,bool fit_to_display,float width = 800 ,float height = 600);
     // 実装部
     std::shared_ptr<impl> impl_;

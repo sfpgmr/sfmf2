@@ -82,9 +82,10 @@ struct h264_renderer<Renderer>::impl
     //compute_time_ = end - start;
 
     //std::time_t end_time = std::chrono::system_clock::to_time_t(end);
-
-    DOUT(boost::wformat(L"compute time: %f \n") % compute_time_.count());
-    complete_(compute_time_);
+	if (!terminate_){
+		DOUT(boost::wformat(L"compute time: %f \n") % compute_time_.count());
+		complete_(compute_time_);
+	}
   }
 
   typename sf::h264_renderer<Renderer>::progress_t& progress()
@@ -449,7 +450,7 @@ private:
       // オーディオサンプルを読み込む
       status = audio_reader_->read_sample(sample);
 
-      if ((status & MF_SOURCE_READERF_ENDOFSTREAM)) {
+	  if ((status & MF_SOURCE_READERF_ENDOFSTREAM) ) {
         // EOFもしくは中断したらファイナライズ処理を行う
         progress_(50);
         break;

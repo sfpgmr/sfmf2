@@ -3,10 +3,10 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IncludePath>H:\libs\DirectXTK\Inc;H:\libs\boost\include\boost-1_55;H:\libs\xbyak;H:\libs\zlib125\zlib-1.2.5;H:\libs\lpng150\lpng150;H:\libs\vst_sdk2_4_rev2\vstsdk2.4\pluginterfaces\vst2.x;H:\libs\Box2D\Box2D;H:\libs\Box2D;H:\libs\DirectXTex;$(IncludePath)</IncludePath>
+    <IncludePath>H:\libs\DirectXTK\Inc;H:\libs\boost\include\boost-1_55;H:\libs\xbyak;H:\libs\zlib125\zlib-1.2.5;H:\libs\lpng150\lpng150;H:\libs\vst_sdk2_4_rev2\vstsdk2.4\pluginterfaces\vst2.x;H:\libs\Box2D\Box2D;H:\libs\Box2D;H:\libs\DirectXTex;H:\libs\Intel\Media SDK 2014 for Clients\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup>
-    <LibraryPath>H:\libs\zlib125\zlib-1.2.5;H:\libs\boost\lib;H:\libs\DirectXTex\DirectXTex\Bin\Desktop_2013\x64\Debug;H:\libs\DirectXTK\Bin\Desktop_2013\x64\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>H:\libs\zlib125\zlib-1.2.5;H:\libs\boost\lib;H:\libs\DirectXTex\DirectXTex\Bin\Desktop_2013\x64\Debug;H:\libs\DirectXTK\Bin\Desktop_2013\x64\Debug;H:\libs\Intel\Media SDK 2014 for Clients\lib\x64;$(LibraryPath)</LibraryPath>
     <_PropertySheetDisplayName>SF_X64_Debug</_PropertySheetDisplayName>
   </PropertyGroup>
   <ItemDefinitionGroup>

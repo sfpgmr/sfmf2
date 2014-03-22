@@ -111,7 +111,6 @@
     <ClCompile Include="source\base_window.cpp" />
     <ClCompile Include="source\code_converter.cpp" />
     <ClCompile Include="source\control_base.cpp" />
-    <ClCompile Include="source\dcomposition_window.cpp" />
     <ClCompile Include="source\dpi.cpp" />
     <ClCompile Include="source\exception.cpp" />
     <ClCompile Include="source\fft4g.cpp" />
@@ -135,7 +134,6 @@
     <ClCompile Include="source\ring_buffer.cpp" />
     <ClCompile Include="source\sequencer.cpp" />
     <ClCompile Include="source\sfmf.cpp" />
-    <ClCompile Include="source\sf_base_win32_window.cpp" />
     <ClCompile Include="source\sf_base_win32_window2.cpp" />
     <ClCompile Include="source\sf_com.cpp" />
     <ClCompile Include="source\sf_windows_base.cpp" />
@@ -167,7 +165,6 @@
     <ClInclude Include="include\base_window.h" />
     <ClInclude Include="include\code_converter.h" />
     <ClInclude Include="include\control_base.h" />
-    <ClInclude Include="include\dcomposition_window.h" />
     <ClInclude Include="include\debugout.h" />
     <ClInclude Include="include\dpi.h" />
     <ClInclude Include="include\exception.h" />
@@ -201,7 +198,6 @@
     <ClInclude Include="include\seq_message.h" />
     <ClInclude Include="include\sfhelper.h" />
     <ClInclude Include="include\sfmf.h" />
-    <ClInclude Include="include\sf_base_win32_window.h" />
     <ClInclude Include="include\sf_base_win32_window2.h" />
     <ClInclude Include="include\sf_com.h" />
     <ClInclude Include="include\sf_memory.h" />

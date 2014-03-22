@@ -47,25 +47,25 @@ struct taskbar::impl
     
   void overlay_icon(const sf::base_window& w,const sf::icon& ic,const std::wstring& description)
   {
-    throw_if_err_()(taskbar_->SetOverlayIcon(reinterpret_cast<HWND>(w.raw_handle()),ic.get(),description.c_str()));
+    throw_if_err_()(taskbar_->SetOverlayIcon(w.hwnd(),ic.get(),description.c_str()));
   }
 
   void progress_state(const sf::base_window& w,TBPFLAG state)
   {
-    throw_if_err_()(taskbar_->SetProgressState(reinterpret_cast<HWND>(w.raw_handle()),state));
+    throw_if_err_()(taskbar_->SetProgressState(w.hwnd(),state));
   }
 
   void progress_value(const sf::base_window& w,boost::uint64_t completed, boost::uint64_t total)
   {
-    throw_if_err_()(taskbar_->SetProgressValue(reinterpret_cast<HWND>(w.raw_handle()),completed,total));
+    throw_if_err_()(taskbar_->SetProgressValue(w.hwnd(),completed,total));
   }
 
   void add_thumb_buttons(const sf::base_window& w,const std::vector<THUMBBUTTON>& tbs){
-      taskbar_->ThumbBarAddButtons(reinterpret_cast<HWND>(w.raw_handle()),tbs.size(),const_cast<LPTHUMBBUTTON>(&(tbs[0])));
+      taskbar_->ThumbBarAddButtons(w.hwnd(),tbs.size(),const_cast<LPTHUMBBUTTON>(&(tbs[0])));
   };
 
   void update_thumb_buttons(const sf::base_window& w,const std::vector<THUMBBUTTON>& tbs){
-      taskbar_->ThumbBarUpdateButtons(reinterpret_cast<HWND>(w.raw_handle()),tbs.size(),const_cast<LPTHUMBBUTTON>(&(tbs[0])));
+      taskbar_->ThumbBarUpdateButtons(w.hwnd(),tbs.size(),const_cast<LPTHUMBBUTTON>(&(tbs[0])));
   };
 
 private:

@@ -369,76 +369,76 @@ namespace sf{
 
   // ウィンドウのサブクラス化
 
-  struct sub_class : boost::noncopyable {
-    typedef std::function<LRESULT(HWND hwnd, uint32_t message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass,DWORD_PTR dwRefData)> call_back_t;
-    typedef LRESULT(sub_class::*mem_func_t)(HWND, UINT, WPARAM, LPARAM, UINT_PTR, DWORD_PTR);
-   
-    sub_class(base_window& window, call_back_t& call_back, DWORD_PTR data) : window_(window), call_back_(call_back), thunk_((LONG_PTR)this)
-    {
-      sub_class_proc_ = (SUBCLASSPROC) thunk_.getCode();
-      SetWindowSubclass((HWND) window_.raw_handle(), sub_class_proc_, (UINT_PTR) &id_, data);
-    }
+  //struct sub_class : boost::noncopyable {
+  //  typedef std::function<LRESULT(HWND hwnd, uint32_t message, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass,DWORD_PTR dwRefData)> call_back_t;
+  //  typedef LRESULT(sub_class::*mem_func_t)(HWND, UINT, WPARAM, LPARAM, UINT_PTR, DWORD_PTR);
+  // 
+  //  sub_class(base_window& window, call_back_t& call_back, DWORD_PTR data) : window_(window), call_back_(call_back), thunk_((LONG_PTR)this)
+  //  {
+  //    sub_class_proc_ = (SUBCLASSPROC) thunk_.getCode();
+  //    SetWindowSubclass((HWND) window_.raw_handle(), sub_class_proc_, (UINT_PTR) &id_, data);
+  //  }
 
-    ~sub_class()
-    {
-      RemoveWindowSubclass((HWND) window_.raw_handle(), sub_class_proc_, (UINT_PTR) &id_);
-    }
-  private:
-    // 64bitモードのみで動作するサンクコード
-    // HookProcの呼び出しにthisを加えてメンバー関数として呼び出すコード
-    struct sub_class_proc_thunk : public Xbyak::CodeGenerator {
-      sub_class_proc_thunk(LONG_PTR this_addr)
-      {
-        // メンバ関数のアドレスを取得
-        auto temp = &sub_class::sub_class_proc;
-        // メンバ関数のアドレスをLONG_PTRにキャストする
-        // 普通にキャストできないので、ポインタのアドレスをvoid**にキャストして参照する
-        LONG_PTR proc = reinterpret_cast<LONG_PTR>(*(void**) &temp);
+  //  ~sub_class()
+  //  {
+  //    RemoveWindowSubclass((HWND) window_.raw_handle(), sub_class_proc_, (UINT_PTR) &id_);
+  //  }
+  //private:
+  //  // 64bitモードのみで動作するサンクコード
+  //  // HookProcの呼び出しにthisを加えてメンバー関数として呼び出すコード
+  //  struct sub_class_proc_thunk : public Xbyak::CodeGenerator {
+  //    sub_class_proc_thunk(LONG_PTR this_addr)
+  //    {
+  //      // メンバ関数のアドレスを取得
+  //      auto temp = &sub_class::sub_class_proc;
+  //      // メンバ関数のアドレスをLONG_PTRにキャストする
+  //      // 普通にキャストできないので、ポインタのアドレスをvoid**にキャストして参照する
+  //      LONG_PTR proc = reinterpret_cast<LONG_PTR>(*(void**) &temp);
 
-        // 引数の位置をひとつ後ろにずらす
-        mov(r10, r9);
-        mov(r9, r8);
-        mov(r8, rdx);
-        mov(rdx, rcx);
-        // thisのアドレスを第一引数(rcx)に格納する
-        mov(rcx, (LONG_PTR) this_addr);
-        // スタックにある変数を取り出す
-        // 戻り先アドレス+作業用変数
-        lea(r11, ptr[rsp + 40]);
-        push(ptr[r11 + 8]);//第6変数
-        push(ptr[r11]);//第5変数
-        push(r10);//第4変数
-        // 関数呼び出し
-        // 作業用スタックの確保
-        sub(rsp, 32);
-        mov(r10, proc);
-        call(r10);
-        // スタックの清掃
-        // 作業用スタック + 変数3つ分
-        add(rsp, 32 + 8 * 3);
-        ret(0);
-      }
-    };
+  //      // 引数の位置をひとつ後ろにずらす
+  //      mov(r10, r9);
+  //      mov(r9, r8);
+  //      mov(r8, rdx);
+  //      mov(rdx, rcx);
+  //      // thisのアドレスを第一引数(rcx)に格納する
+  //      mov(rcx, (LONG_PTR) this_addr);
+  //      // スタックにある変数を取り出す
+  //      // 戻り先アドレス+作業用変数
+  //      lea(r11, ptr[rsp + 40]);
+  //      push(ptr[r11 + 8]);//第6変数
+  //      push(ptr[r11]);//第5変数
+  //      push(r10);//第4変数
+  //      // 関数呼び出し
+  //      // 作業用スタックの確保
+  //      sub(rsp, 32);
+  //      mov(r10, proc);
+  //      call(r10);
+  //      // スタックの清掃
+  //      // 作業用スタック + 変数3つ分
+  //      add(rsp, 32 + 8 * 3);
+  //      ret(0);
+  //    }
+  //  };
 
-    // 汎用性を高めるために、関数をファンクタ(std::function)で呼び換えるためのラッパー
-    LRESULT sub_class_proc(
-      HWND hWnd,
-      UINT uMsg,
-      WPARAM wParam,
-      LPARAM lParam,
-      UINT_PTR uIdSubclass,
-      DWORD_PTR dwRefData
-      ){
-      // ファンクタの呼び出し
-      return call_back_(hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefData);
-    }
+  //  // 汎用性を高めるために、関数をファンクタ(std::function)で呼び換えるためのラッパー
+  //  LRESULT sub_class_proc(
+  //    HWND hWnd,
+  //    UINT uMsg,
+  //    WPARAM wParam,
+  //    LPARAM lParam,
+  //    UINT_PTR uIdSubclass,
+  //    DWORD_PTR dwRefData
+  //    ){
+  //    // ファンクタの呼び出し
+  //    return call_back_(hWnd, uMsg, wParam, lParam, uIdSubclass, dwRefData);
+  //  }
 
-    UINT id_;
-    sub_class_proc_thunk thunk_;
-    base_window& window_;
-    call_back_t& call_back_;
-    SUBCLASSPROC sub_class_proc_;
-  };
+  //  UINT id_;
+  //  sub_class_proc_thunk thunk_;
+  //  base_window& window_;
+  //  call_back_t& call_back_;
+  //  SUBCLASSPROC sub_class_proc_;
+  //};
 
   // フック
 
@@ -510,6 +510,57 @@ namespace sf{
     return DefWindowProcW(hwnd, uMsg, wParam, lParam);
   }
 
+  // ShowWindow Wrapper
+
+  template < typename Window >
+  inline bool show_window(std::unique_ptr<Window>& window, uint32_t param)
+  {
+	  return ShowWindow(reinterpret_cast<HWND>(window->raw_handle()), param);
+  }
+
+  template < typename Window >
+  inline bool show_window(Window* window, uint32_t param)
+  {
+	  return ShowWindow(reinterpret_cast<HWND>(window->raw_handle()), param);
+  }
+
+  inline bool show_window(HWND hwnd, uint32_t param)
+  {
+	  return ShowWindow(hwnd, param);
+  }
+
+
+  template <typename WindowType>
+  inline void set_window_long(WindowType& window, int index, LONG_PTR data)
+  {
+	  SetLastError(0);
+	  if (::SetWindowLongPtrW((HWND) window, index, data) == 0)
+	  {
+		  long err = 0;
+		  if ((err = GetLastError()) != 0){
+			  SetLastError(err);
+			  throw sf::win32_error_exception();
+		  }
+	  };
+  }
+
+  template<typename WindowType>
+  inline void set_window_pos(
+	  WindowType& window,
+	  HWND hwnd_insert_after,  // 配置順序のhandle
+	  int x,                 // 横方向の位置
+	  int y,                 // 縦方向の位置
+	  int cx,                // 幅
+	  int cy,                // 高さ
+	  UINT flags            // ウィンドウ位置のオプション
+	  )
+  {
+	  BOOL res = SetWindowPos((HWND) window, hwnd_insert_after, x, y, cx, cy, flags);
+	  if (!res)
+	  {
+		  throw win32_error_exception();
+	  }
+  }
 
 
 }

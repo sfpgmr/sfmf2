@@ -38,7 +38,7 @@ timer::timer(sf::base_window& window,uint32_t timeout) : window_(window),timeout
 
 }
 void timer::start(){
-  if(!::SetTimer(reinterpret_cast<HWND>(window_.raw_handle()),(UINT_PTR)&timer_id_,timeout_,NULL)){
+  if(!::SetTimer(window_.hwnd(),(UINT_PTR)&timer_id_,timeout_,NULL)){
     throw timer::exception();
   };
 };
@@ -47,7 +47,7 @@ void timer::player_stop()
 {
   if(timer_id_)
   {
-    ::KillTimer(reinterpret_cast<HWND>(window_.raw_handle()),(UINT_PTR)&timer_id_);
+    ::KillTimer(window_.hwnd(),(UINT_PTR)&timer_id_);
     timer_id_ = 0;
   }
 };

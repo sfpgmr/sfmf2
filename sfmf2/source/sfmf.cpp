@@ -9,7 +9,7 @@
 #include <mfreadwrite.h>  
 //#include "DirectXBase.h"
 #include "sfmf.h"
-
+#include "sf_memory.h"
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
@@ -290,140 +290,6 @@ using namespace Windows::UI::Core;
 namespace sf {
 
 
-
-	//Windows::Foundation::IAsyncActionWithProgress<double>^ sf::WriteAsync(Windows::Storage::Streams::IRandomAccessStream^ stream)
-	//{
-	//  return create_async([stream]
-	//    (progress_reporter<double> reporter, cancellation_token token) {
-
-	//    // some parameters   
-
-	//    //auto_mf mf;
-
-	//    //
-	//    // Sink Writer の作成
-	//    //
-
-	//    ComPtr<IMFByteStream> spByteStream;
-	//    CHK(MFCreateMFByteStreamOnStreamEx((IUnknown*) stream, &spByteStream));
-
-	//    ComPtr<IMFAttributes> spAttr;
-	//    CHK(MFCreateAttributes(&spAttr, 10));
-	//    CHK(spAttr->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
-
-	//    ComPtr<IMFSinkWriter> spSinkWriter;
-	//    CHK(MFCreateSinkWriterFromURL(L".mp4", spByteStream.Get(), spAttr.Get(), &spSinkWriter));
-
-	//    //   
-	//    // 出力メディアタイプのセットアップ   
-	//    //   
-
-	//    ComPtr<IMFMediaType> spTypeOut;
-	//    CHK(MFCreateMediaType(&spTypeOut));
-	//    CHK(spTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-	//    CHK(spTypeOut->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_H264));
-	//    CHK(spTypeOut->SetUINT32(MF_MT_AVG_BITRATE, BITRATE));
-	//    CHK(spTypeOut->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
-	//    CHK(MFSetAttributeSize(spTypeOut.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
-	//    CHK(MFSetAttributeRatio(spTypeOut.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
-	//    CHK(MFSetAttributeRatio(spTypeOut.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
-
-	//    DWORD streamIndex;
-	//    CHK(spSinkWriter->AddStream(spTypeOut.Get(), &streamIndex));
-
-	//    //   
-	//    // 入力メディアタイプのセットアップ  
-	//    //   
-
-	//    ComPtr<IMFMediaType> spTypeIn;
-	//    CHK(MFCreateMediaType(&spTypeIn));
-	//    CHK(spTypeIn->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video));
-	//    CHK(spTypeIn->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB32));
-	//    CHK(spTypeIn->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive));
-	//    CHK(MFSetAttributeSize(spTypeIn.Get(), MF_MT_FRAME_SIZE, WIDTH, HEIGHT));
-	//    CHK(MFSetAttributeRatio(spTypeIn.Get(), MF_MT_FRAME_RATE, RATE_NUM, RATE_DENOM));
-	//    CHK(MFSetAttributeRatio(spTypeIn.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
-
-	//    CHK(spSinkWriter->SetInputMediaType(streamIndex, spTypeIn.Get(), nullptr));
-
-	//    //   
-	//    //    
-	//    //   
-
-	//    CHK(spSinkWriter->BeginWriting());
-
-	//    double progress = 0.;
-	//    LONGLONG hnsSampleTime = 0;
-	//    for (unsigned int nFrame = 0; nFrame < FRAME_NUM; nFrame++)
-	//    {
-	//      if (token.is_canceled())
-	//      {
-	//        break;
-	//      }
-
-	//      double newProgress = 100. * (double) nFrame / (double) FRAME_NUM;
-	//      if (newProgress - progress >= 1.)
-	//      {
-	//        progress = newProgress;
-	//        reporter.report(progress);
-	//      }
-
-	//      //   
-	//      // Create a media sample   
-	//      //   
-
-	//      ComPtr<IMFSample> spSample;
-	//      CHK(MFCreateSample(&spSample));
-	//      CHK(spSample->SetSampleDuration(hnsSampleDuration));
-	//      CHK(spSample->SetSampleTime(hnsSampleTime));
-	//      hnsSampleTime += hnsSampleDuration;
-
-	//      //   
-	//      // Add a media buffer filled with random data   
-	//      //   
-
-	//      ComPtr<IMFMediaBuffer> spBuffer;
-	//      CHK(MFCreateMemoryBuffer(cbMaxLength, &spBuffer));
-	//      CHK(spBuffer->SetCurrentLength(cbMaxLength));
-	//      CHK(spSample->AddBuffer(spBuffer.Get()));
-
-	//      // Draw a bouncing white rectangle over black background
-	//      unsigned char *pbBuffer = nullptr;
-	//      CHK(spBuffer->Lock(&pbBuffer, nullptr, nullptr));
-	//      for (unsigned int i = 0; i < HEIGHT; i++)
-	//      {
-	//        for (unsigned int j = 0; j < WIDTH; j++)
-	//        {
-	//          unsigned int pos = 4 * (i * WIDTH + j);
-	//          unsigned char val = 255 * (
-	//            (abs((int) WIDTH / 2 - (int) j) < (WIDTH / 4)) &&
-	//            (abs(HEIGHT * (.5 + .1 * sin(2. * M_PI * (double) nFrame / (double) ONE_SECOND)) - (int) i) < (HEIGHT / 4))
-	//            );
-	//          pbBuffer[pos] = val;
-	//          pbBuffer[pos + 1] = val;
-	//          pbBuffer[pos + 2] = val;
-	//          pbBuffer[pos + 3] = val;
-	//        }
-	//      }
-	//      CHK(spBuffer->Unlock());
-
-	//      //   
-	//      // Write the media sample   
-	//      //   
-
-	//      CHK(spSinkWriter->WriteSample(streamIndex, spSample.Get()));
-	//    }
-
-	//    if (!token.is_canceled())
-	//    {
-	//      CHK(spSinkWriter->Finalize());
-
-	//      reporter.report(100.);
-	//    }
-	//  });
-	//}
-
-
 	//---------------------------------------------------------------------
 	const unsigned int RATE_NUM = 30000;
 	const unsigned int RATE_DENOM = 1000;
@@ -514,7 +380,7 @@ namespace sf {
 
 		const unsigned int WIDTH = width_;
 		const unsigned int HEIGHT = height_;
-		const unsigned int BITRATE = 9000000;
+		const unsigned int BITRATE = 3000000;
 		const unsigned int ASPECT_NUM = 1;
 		const unsigned int ASPECT_DENOM = 1;
 		const unsigned long  BPP_IN = 32;
@@ -533,6 +399,7 @@ namespace sf {
 
 		CHK(MFCreateAttributes(&attr_, 10));
 		CHK(attr_->SetUINT32(MF_READWRITE_ENABLE_HARDWARE_TRANSFORMS, true));
+		CHK(attr_->SetUINT32(MF_READWRITE_DISABLE_CONVERTERS, false));
 		CHK(attr_->SetUINT32(MF_SINK_WRITER_DISABLE_THROTTLING, true));
 
 
@@ -542,6 +409,9 @@ namespace sf {
 
 		CHK(MFCreateSinkWriterFromURL(L".mp4", byte_stream_.Get(), attr_.Get(), &sinkWriter));
 		CHK(sinkWriter.As(&sink_writer_));
+		//CHK(MFCreateSinkWriterFromURL(L".mp4", byte_stream_.Get(), attr_.Get(), &sink_writer_));
+
+
 
 		//   
 		// 出力メディアタイプのセットアップ   
@@ -561,6 +431,10 @@ namespace sf {
 		CHK(MFSetAttributeRatio(media_type_out_.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
 
 		CHK(sink_writer_->AddStream(media_type_out_.Get(), &stream_index_));
+
+
+
+
 		IMFTransformPtr mft;
 		//IMFRateSupportPtr ptr;
 
@@ -593,23 +467,23 @@ namespace sf {
 		CHK(MFSetAttributeRatio(media_type_in_.Get(), MF_MT_PIXEL_ASPECT_RATIO, ASPECT_NUM, ASPECT_DENOM));
 
 		// エンコーダーのセットアップ
-		prop_variant prop;
-		IPropertyStorePtr pPropertyStore;
-		IMFAttributesPtr pEncoderParameters;
+		//prop_variant prop;
+		//IPropertyStorePtr pPropertyStore;
+		//IMFAttributesPtr pEncoderParameters;
 
-		CHK(PSCreateMemoryPropertyStore(__uuidof(IPropertyStore), (void**) &pPropertyStore));
+		//CHK(PSCreateMemoryPropertyStore(__uuidof(IPropertyStore), (void**) &pPropertyStore));
 
-		prop.value().vt = VT_BOOL;
-		prop.value().boolVal = VARIANT_TRUE;
-		CHK(pPropertyStore->SetValue(MFPKEY_VBRENABLED, prop.value()));
-		prop.value().vt = VT_I4;
-		prop.value().lVal = 100;
-		CHK(pPropertyStore->SetValue(MFPKEY_VBRQUALITY, prop.value()));
+		//prop.value().vt = VT_BOOL;
+		//prop.value().boolVal = VARIANT_FALSE;
+		//CHK(pPropertyStore->SetValue(MFPKEY_VBRENABLED, prop.value()));
+		//prop.value().vt = VT_I4;
+		//prop.value().lVal = 100;
+		//CHK(pPropertyStore->SetValue(MFPKEY_VBRQUALITY, prop.value()));
 
-		CHK(MFCreateAttributes(&pEncoderParameters, 5));
-		CHK(attr_->SetUnknown(MF_SINK_WRITER_ENCODER_CONFIG, pPropertyStore.Get()));
+		//CHK(MFCreateAttributes(&pEncoderParameters, 5));
+		//CHK(attr_->SetUnknown(MF_SINK_WRITER_ENCODER_CONFIG, pPropertyStore.Get()));
 
-		CHK(sink_writer_->SetInputMediaType(stream_index_, media_type_in_.Get(), pEncoderParameters.Get()));
+		CHK(sink_writer_->SetInputMediaType(stream_index_, media_type_in_.Get(), nullptr /*pEncoderParameters.Get()*/));
 
 		// オーディオ
 
@@ -621,6 +495,32 @@ namespace sf {
 		//CHK(media_type_in_audio_->SetUINT32(MF_MT_AUDIO_NUM_CHANNELS, channel_count));
 		audio_media_type_->CopyAllItems(media_type_in_audio_.Get());
 		CHK(sink_writer_->SetInputMediaType(stream_index_audio_, media_type_in_audio_.Get(), NULL));
+
+		// ハードウェアエンコーダが使われているかの確認
+
+		{
+			IMFTransformPtr transform;
+			ICodecAPIPtr codec;
+			GUID guid;
+
+			CHK(sink_writer_->GetServiceForStream(stream_index_, GUID_NULL, IID_IMFTransform, &transform));
+
+			IMFAttributesPtr attributes;
+			CHK(transform->GetAttributes(&attributes));
+			UINT32 l = 0;
+			std::wstring str;
+			bool use_hw = false;
+			HRESULT hr = attributes->GetStringLength(MFT_ENUM_HARDWARE_URL_Attribute, &l);
+			if (SUCCEEDED(hr))
+			{
+				str.reserve(l + 1);
+				hr = attributes->GetString(MFT_ENUM_HARDWARE_URL_Attribute, (LPWSTR) str.data(), l + 1, &l);
+				if (SUCCEEDED(hr)){
+					use_hw = true;
+					DOUT2(L"/////// HARDWARE ENCODE IS USED. ////\n");
+				}
+			}
+		}
 
 		//   
 		// 出力開始  
@@ -763,6 +663,68 @@ namespace sf {
 		return flags;
 	}
 
+	void print_mft_(const GUID& guid, std::wfstream& out, uint32_t flags = MFT_ENUM_FLAG_ALL)
+	{
+		co_task_memory<IMFActivate*> activate;
+		
+		UINT32 count = 0;
+
+		HRESULT hr = MFTEnumEx(guid, flags, NULL, NULL, &activate, &count);
+
+		if (SUCCEEDED(hr) && count > 0)
+		{
+			for (int i = 0; i < count; ++i)
+			{
+				UINT32 l = 0;
+				UINT32 l1 = 0;
+				activate.get()[i]->GetStringLength(MFT_FRIENDLY_NAME_Attribute, &l);
+				std::unique_ptr<wchar_t[]> name(new wchar_t[l + 1]);
+				memset(name.get(), 0, l + 1);
+				hr = activate.get()[i]->GetString(MFT_FRIENDLY_NAME_Attribute, name.get(), l + 1, &l1);
+				out << name.get() << std::endl;
+				activate.get()[i]->Release();
+			}
+			//CoTaskMemFree(activate);
+		}
+	}
+
+	void print_mft()
+	{
+		std::wfstream out(L"MFT.txt", std::ios_base::out | std::ios_base::trunc);
+
+		out << std::endl << "**" << L"MFT_CATEGORY_AUDIO_DECODER" << L"**" << std::endl << std::endl;
+
+		print_mft_(MFT_CATEGORY_AUDIO_DECODER, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_AUDIO_EFFECT" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_AUDIO_EFFECT, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_AUDIO_ENCODER" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_AUDIO_ENCODER, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_DEMULTIPLEXER" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_DEMULTIPLEXER, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_MULTIPLEXER" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_MULTIPLEXER, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_OTHER" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_OTHER, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_DECODER" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_VIDEO_DECODER, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_EFFECT" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_VIDEO_EFFECT, out);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_ENCODER" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_VIDEO_ENCODER, out, MFT_ENUM_FLAG_HARDWARE);
+
+		out << std::endl << L"**" << L"MFT_CATEGORY_VIDEO_PROCESSOR" << L"**" << std::endl << std::endl;
+		print_mft_(MFT_CATEGORY_VIDEO_PROCESSOR, out, MFT_ENUM_FLAG_HARDWARE);
+
+		out.close();
+	}
 
 
 }

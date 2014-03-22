@@ -1,16 +1,31 @@
 #pragma once
 
 namespace sf{
-  class control_base
+
+class control_base {
+public:
+	control_base(){};
+	virtual ~control_base() {};
+	virtual HWND hwnd() = 0;
+	virtual void * raw_handle() = 0;
+};
+
+// ポインタ型
+typedef std::unique_ptr<control_base> control_base_ptr;
+
+struct empty_t {};
+
+template < typename BaseClass = empty_t >
+  class control_impl : public control_base ,public BaseClass 
   {
   public:
+    typedef control_impl<BaseClass> this_type;
     // サブクラス化した後に呼ばれるファンクタ定義
-    typedef std::function<LRESULT (control_base& base, UINT uMsg, WPARAM wParam, LPARAM lParam) > subclass_func_t;
-    // ポインタ型
-    typedef std::unique_ptr<control_base> control_base_ptr;
+	typedef std::function<LRESULT(this_type& base, UINT uMsg, WPARAM wParam, LPARAM lParam) > subclass_func_t;
+	friend class subclass_func_t;
  
     template <typename ParentWindowType> 
-    control_base(std::wstring& class_name,
+	control_impl(std::wstring& class_name,
       std::wstring& window_name, 
       subclass_func_t func,
       ParentWindowType& parent,
@@ -24,7 +39,7 @@ namespace sf{
       HINSTANCE hInstance = GetModuleHandle(NULL)  // アプリケーションインスタンスのハンドル
       ) : thunk_((LONG_PTR)this), func_(std::move(func))
     {
-      hwnd_ = CreateWindowEx(dwExStyle,class_name.c_str(),window_name.c_str(),dwStyle,x,y,nWidth,nHeight,reinterpret_cast<HWND>(parent.raw_handle()),hMenu,hInstance,NULL);
+      hwnd_ = CreateWindowEx(dwExStyle,class_name.c_str(),window_name.c_str(),dwStyle,x,y,nWidth,nHeight,reinterpret_cast<HWND>(parent.hwnd()),hMenu,hInstance,NULL);
       if (hwnd_ == NULL){
         throw sf::win32_error_exception();
       }
@@ -33,7 +48,7 @@ namespace sf{
       SetWindowSubclass(hwnd_, proc_, (UINT_PTR) &id_subclass_, NULL);
     }
 
-    virtual ~control_base()
+	virtual ~control_impl()
     {
       // サブクラス化解除
       RemoveWindowSubclass(hwnd_, proc_, (UINT_PTR) &id_subclass_);
@@ -49,6 +64,7 @@ namespace sf{
     }
 
     void* raw_handle(){ return hwnd_; }
+	HWND hwnd(){ return hwnd_; }
   private:
     UINT id_subclass_;
     HWND hwnd_;
@@ -58,7 +74,7 @@ namespace sf{
     struct subclassproc_thunk : public Xbyak::CodeGenerator {
       subclassproc_thunk(LONG_PTR this_addr)
       {
-        LRESULT(control_base::*pmemfunc)(HWND, UINT, WPARAM, LPARAM) = &control_base::subclass_proc_;
+		  LRESULT(sf::control_impl<BaseClass>::*pmemfunc)(HWND, UINT, WPARAM, LPARAM) = &sf::control_impl<BaseClass>::subclass_proc_;
         LONG_PTR  proc = (LONG_PTR)(*(void**) &pmemfunc);
         // 引数の位置をひとつ後ろにずらす
         mov(r10, r9);
